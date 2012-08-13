@@ -4,8 +4,11 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
+     ('Jimmy Henderickx', 'jimmyhdx@gmail.com'),
 )
+
+import djcelery
+djcelery.setup_loader()
 
 MANAGERS = ADMINS
 
@@ -84,7 +87,7 @@ SECRET_KEY = 'jjkn=l8$2c#3%)$amrm7evad)p8@$4g5p_=603*xt&amp;wp!b(c4h'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -120,9 +123,14 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
+    'djcelery',
+    'djcelery.transport',
+    'dajaxice',
     'brew',
 )
+DAJAXICE_MEDIA_PREFIX="dajaxice"
 
+BROKER_URL = 'django://'
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.

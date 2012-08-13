@@ -16,16 +16,78 @@
     <div class="span8">
         <div id="mashing-tlog-graph" style="width: 600px; height: 300px; margin: 0 auto"></div>
     </div>
-    <div class="span4">
-        <h2>00:31:45</h2>
-        <a href="#" class="btn btn-large btn-success"><i class="icon-play icon-white"></i> Start</a>
-        <a href="#" class="btn btn-large btn-danger"><i class="icon-stop icon-white"></i> Stop</a>
+    <div class="span4 centered-text">
+        <div class="hero-unit">
+    
+        <h1 id="timer">00:00:00</h1>
+            
+     <p>
+        <a href="javascript:void(0)" id="mashing-start" class="btn btn-large btn-success" onclick="Dajaxice.brew.start_mashing(mashing_started)"><i class="icon-play icon-white"></i> Start</a>
+        
+
+<a data-toggle="modal" href="#modalStopMashing" id="mashing-stop" class="btn btn-large btn-danger disabled"><i class="icon-stop icon-white"></i> Stop</a>
+        
+    </p>
+<h1 id="temperature">50,3°</h1>
+      </div>
+        
+        <h1></h1>
+     
+
+        <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Degrees</th>
+            <th>Minutes</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-success">
+            <td>1</td>
+            <td>52</td>
+            <td>10</td>
+            
+            <td>Finished</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>62</td>
+            <td>60</td>
+            
+            <td>00:28:35</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>72</td>
+            <td>30</td>
+            
+            <td>Awaiting</td>
+          </tr>
+        </tbody>
+      </table>
+
+      
   </div>
-  
+    </div>
 </div>
 
 
-
+    <div class="modal hide" id="modalStopMashing">
+    <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Warning!</h3>
+    </div>
+    <div class="modal-body">
+    <p>Are you sure you want to stop the mashing process?<br/>
+        Logging will stop and reset after this.</p>
+    </div>
+    <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">Close</a>
+    <a href="#"  onclick="Dajaxice.brew.stop_mashing(mashing_stopped)" class="btn btn-primary">Stop mashing</a>
+    </div>
+    </div>
 
 {% endblock %}
 
@@ -44,6 +106,11 @@
 
 
 {% block extra_scripts %} 
+<script type="text/javascript"> 
+   time_mashing_started = null;
+   timer_active = false;
+</script>
+
 <script src="{{ STATIC_URL }}highcharts/js/highcharts.js"></script>
 
 
