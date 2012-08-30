@@ -21,3 +21,10 @@ class MashingTempLog(models.Model):
     brewing_day = models.ForeignKey(BrewingDay)
     degrees = models.CharField(max_length=3)    
     created = models.DateTimeField(auto_now_add=True)
+
+
+class Variable(models.Model):
+    key = models.CharField(max_length=25)
+    value = models.CharField(max_length=255)
+    def __unicode__(self):
+        return str(self.key) + ' - ' + str(self.value)

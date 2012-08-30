@@ -1,4 +1,4 @@
-from brew.models import Brew, MashingSchemeItem, BrewingDay, MashingTempLog
+from brew.models import Brew, MashingSchemeItem, BrewingDay, MashingTempLog, Variable
 from django.contrib import admin
 
 
@@ -22,4 +22,5 @@ class BrewAdmin(admin.ModelAdmin):
 
 admin.site.register(Brew, BrewAdmin)
 admin.site.register(BrewingDay)
+admin.site.register(Variable)
 admin.site.register(MashingTempLog)

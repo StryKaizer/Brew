@@ -47,8 +47,26 @@ function check_response(data){
 
 
 
+function do_update(){
+
+  Dajaxice.brew.update(callback_update);
+  
+}
+
+function callback_update(data){
+  
+   check_response(data);
 
 
+
+    
+            //options.series[0].data = data.chart.series[0];
+            
+    
+            //chart = new Highcharts.Chart(data.chart_options);
+        
+   console.log(data);
+}
 
 
 

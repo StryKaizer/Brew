@@ -18,30 +18,32 @@
     </div>
     <div class="span4 centered-text">
         <div class="hero-unit">
-    
-        <h1 id="timer">00:00:00</h1>
             
-     <p>
-        <a href="javascript:void(0)" id="mashing-start" class="btn btn-large btn-success" onclick="Dajaxice.brew.start_mashing(mashing_started)"><i class="icon-play icon-white"></i> Start</a>
-        
+            <h1 id="timer">00:00:00</h1>
+            
+            <p>
+                <a href="javascript:void(0)" id="mashing-start" class="btn btn-large btn-success" onclick="Dajaxice.brew.start_mashing(mashing_started)"><i class="icon-play icon-white"></i> Start</a>     
 
-<a data-toggle="modal" href="#modalStopMashing" id="mashing-stop" class="btn btn-large btn-danger disabled"><i class="icon-stop icon-white"></i> Stop</a>
-        
-    </p>
-<h1 id="temperature">50,3°</h1>
-      </div>
+                           <a href="javascript:void(0)" id="mashing-start" class="btn btn-large btn-success" onclick="do_update()"><i class="icon-play icon-white"></i> Update</a>
+                
+
+                <a data-toggle="modal" href="#modalStopMashing" id="mashing-stop" class="btn btn-large btn-danger disabled"><i class="icon-stop icon-white"></i> Stop</a>
+                
+            </p>
+            <h1 id="temperature">50,3°</h1>
+        </div>
         
         <h1></h1>
-     
+        
 
         <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Degrees</th>
-            <th>Minutes</th>
-            <th>Status</th>
-          </tr>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Degrees</th>
+                <th>Minutes</th>
+                <th>Status</th>
+            </tr>
         </thead>
         <tbody>
           <tr class="row-success">
@@ -50,46 +52,46 @@
             <td>10</td>
             
             <td>Finished</td>
-          </tr>
-          <tr>
+        </tr>
+        <tr>
             <td>2</td>
             <td>62</td>
             <td>60</td>
             
             <td>00:28:35</td>
-          </tr>
-          <tr>
+        </tr>
+        <tr>
             <td>3</td>
             <td>72</td>
             <td>30</td>
             
             <td>Awaiting</td>
-          </tr>
-        </tbody>
-      </table>
+        </tr>
+    </tbody>
+</table>
 
-      
-  </div>
-    </div>
+
+</div>
+</div>
 </div>
 
 
-    <div class="modal hide" id="modalStopMashing">
+<div class="modal hide" id="modalStopMashing">
     <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Warning!</h3>
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>Warning!</h3>
     </div>
     <div class="modal-body">
-    <p>Are you sure you want to stop the mashing process?<br/>
-        Logging will stop and reset after this.</p>
+        <p>Are you sure you want to stop the mashing process?<br/>
+            Logging will stop and reset after this.</p>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn" data-dismiss="modal">Close</a>
+            <a href="#"  onclick="Dajaxice.brew.stop_mashing(mashing_stopped)" class="btn btn-primary">Stop mashing</a>
+        </div>
     </div>
-    <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">Close</a>
-    <a href="#"  onclick="Dajaxice.brew.stop_mashing(mashing_stopped)" class="btn btn-primary">Stop mashing</a>
-    </div>
-    </div>
 
-{% endblock %}
+    {% endblock %}
 
 
 
@@ -105,74 +107,74 @@
 
 
 
-{% block extra_scripts %} 
-<script type="text/javascript"> 
-   time_mashing_started = null;
-   timer_active = false;
-</script>
+    {% block extra_scripts %} 
+    <script type="text/javascript"> 
+    time_mashing_started = null;
+    timer_active = false;
+    </script>
 
-<script src="{{ STATIC_URL }}highcharts/js/highcharts.js"></script>
+    <script src="{{ STATIC_URL }}highcharts/js/highcharts.js"></script>
 
 
-<script type="text/javascript">
-$(function () {
-    var chart;
-    $(document).ready(function() {
-        chart = new Highcharts.Chart({
-            chart: {
-                renderTo: 'mashing-tlog-graph',
-                type: 'line',
-              
-            },
-                    credits: {
-            enabled: false
-        },
-                    title: {
-            text: null
-        },
+    <script type="text/javascript">
+    $(function () {
+        var chart;
+        $(document).ready(function() {
+            chart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'mashing-tlog-graph',
+                    type: 'line',
+                    
+                },
+                credits: {
+                    enabled: false
+                },
+                title: {
+                    text: null
+                },
 
-        xAxis: {
-            type: 'datetime',
+                xAxis: {
+                    type: 'datetime',
             dateTimeLabelFormats: { // don't display the dummy year
-                month: '%e. %b',
-                year: '%b'
-            }
-        },
-            yAxis: {
-                title: null,
+            month: '%e. %b',
+            year: '%b'
+        }
+    },
+    yAxis: {
+        title: null,
 
-                plotLines: [{
-                    value: 0,
-                    width: 1,
-                    color: '#EEEEEE'
-                }]
-            },
-            legend: {
-                enabled: false
-            },
-            tooltip: {
-                formatter: function() {
-                        return '<b>'+ this.series.name +'</b><br/>'+
-                        this.x +': '+ this.y +'°C';
-                }
-            },
+        plotLines: [{
+            value: 0,
+            width: 1,
+            color: '#EEEEEE'
+        }]
+    },
+    legend: {
+        enabled: false
+    },
+    tooltip: {
+        formatter: function() {
+            return '<b>'+ this.series.name +'</b><br/>'+
+            this.x +': '+ this.y +'°C';
+        }
+    },
 
-series: [{
-            name: 'Sensor 1',
-            color: '#0088CC',
+    series: [{
+        name: 'Sensor 1',
+        color: '#0088CC',
             // Define the data points. All series have a dummy year
             // of 1970/71 in order to be compared on the same x axis. Note
             // that in JavaScript, months start at 0 for January, 1 for February etc.
             data: [
-                [Date.UTC(2012,  2, 11, 0,0,0), 25.4],
-                [Date.UTC(2012,  2, 11, 0,0,5), 25.8],
-                [Date.UTC(2012,  2, 11, 0,0,15), 26.8],
-                [Date.UTC(2012,  2, 11, 0,0,25), 25.8]
+            [Date.UTC(2012,  2, 11, 0,0,0), 25.4],
+            [Date.UTC(2012,  2, 11, 0,0,5), 25.8],
+            [Date.UTC(2012,  2, 11, 0,0,15), 26.8],
+            [Date.UTC(2012,  2, 11, 0,0,25), 25.8]
             ]
         }]
-        });
     });
-    
 });
-        </script>
+
+});
+</script>
 {% endblock %}
