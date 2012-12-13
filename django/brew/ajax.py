@@ -22,11 +22,22 @@ def stop_mashing(request):
     return simplejson.dumps({'status':200})
 
 @dajaxice_register
-def update(request):
+def chart_update_all(request):
     brewing_day_id = 1
     data = {}
     brewing_day = BrewingDay.objects.get(id=brewing_day_id)
-    data['chart'] = get_chart_data(brewing_day)
+    logs = MashingTempLog.objects.filter(brewing_day=brewing_day)
+    data['chart'] = style_chart_data(logs)
+
+    # dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
+    # data['chart'] = [['hi1', 'ho'], ['hi2', 'ho'], ['hi3', 'ho'], ['hi4', 'ho']]    
+    return simplejson.dumps({'status':200, 'data': data})
+
+@dajaxice_register
+def chart_update_latest(request):
+    brewing_day_id = 1
+    data = {}
+    data['chart'] = style_chart_data([MashingTempLog.objects.latest('id')])
     
     return simplejson.dumps({'status':200, 'data': data})
 
@@ -34,15 +45,11 @@ def update(request):
 
 
 
-
 # TODO
-def get_chart_data(brewing_day):
+def style_chart_data(mashing_temp_logs):
     #return ['jjj', 'fjoesqjf']
     result = []
-    for mashing_temp_log in MashingTempLog.objects.filter(brewing_day=brewing_day):
-        #timestamp
-        #result.append({'Date.UTC(2012,  2, 11, 0,0,0)', 'ff'})
-        b = {'ji': 'jojp'}
-        #result.append(format(mashing_temp_log.created, 'U'))
-        result.append(b)
+    for mashing_temp_log in mashing_temp_logs:
+        log = [mashing_temp_log.created.isoformat(), mashing_temp_log.degrees]
+        result.append(log)
     return result
