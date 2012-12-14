@@ -21,6 +21,7 @@ class MashingTempLog(models.Model):
     brewing_day = models.ForeignKey(BrewingDay)
     degrees = models.CharField(max_length=3)    
     created = models.DateTimeField(auto_now_add=True)
+    
 
 
 class Variable(models.Model):

@@ -28,9 +28,6 @@ def chart_update_all(request):
     brewing_day = BrewingDay.objects.get(id=brewing_day_id)
     logs = MashingTempLog.objects.filter(brewing_day=brewing_day)
     data['chart'] = style_chart_data(logs)
-
-    # dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
-    # data['chart'] = [['hi1', 'ho'], ['hi2', 'ho'], ['hi3', 'ho'], ['hi4', 'ho']]    
     return simplejson.dumps({'status':200, 'data': data})
 
 @dajaxice_register
@@ -45,9 +42,7 @@ def chart_update_latest(request):
 
 
 
-# TODO
 def style_chart_data(mashing_temp_logs):
-    #return ['jjj', 'fjoesqjf']
     result = []
     for mashing_temp_log in mashing_temp_logs:
         log = [mashing_temp_log.created.isoformat(), mashing_temp_log.degrees]

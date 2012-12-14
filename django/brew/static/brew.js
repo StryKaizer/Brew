@@ -3,6 +3,8 @@ timer_timeout = null;
 timer_active = false;
 chart = null;
 
+countdown_for_update = 25;
+
 var options = {
   chart: {
     renderTo: 'mashing-tlog-graph',
@@ -61,6 +63,7 @@ var options = {
       function mashing_started(data){
         check_response(data);
 
+        chart_update_all();
         time_mashing_started = Date.now();
         timer_active = true;
         run_mashing();
@@ -106,19 +109,13 @@ var options = {
       }
       function callback_chart_update_all(data){
         check_response(data);
-            // Define the data points. All series have a dummy year
-            // of 1970/71 in order to be compared on the same x axis. Note
-            // that in JavaScript, months start at 0 for January, 1 for February etc.
 
+            options.series[0].data = []
+            for(item in data.data.chart){
+              iso8601date = data.data.chart[item][0];
+              options.series[0].data.push([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
+            }
 
-        options.series[0].data = [
-            [Date.UTC(2012,  2, 11, 0,0,0), 25.4],
-            [Date.UTC(2012,  2, 11, 0,0,5), 25.8],
-            [Date.UTC(2012,  2, 11, 0,0,15), 26.8],
-            [Date.UTC(2012,  2, 11, 0,0,25), 25.8],
-            [Date.UTC(2012,  2, 11, 0,0,30), 25.8],
-            [Date.UTC(2012,  2, 11, 0,0,35), 28.8]
-            ]
           chart = new Highcharts.Chart(options); 
       }
 
@@ -128,8 +125,14 @@ var options = {
       }
       function callback_chart_update_latest(data){
         check_response(data);
+        options.series[0].data = []
+        for(item in data.data.chart){
+          iso8601date = data.data.chart[item][0];
+          chart.series[0].addPoint([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
+          $('#temperature').text(data.data.chart[item][1] + '°');
+        }
 
-        chart.series[0].addPoint([Date.UTC(2012,  2, 11, 0,0,40), 22.8]);
+        
       }
 
 
@@ -147,6 +150,12 @@ $('#timer').text(time_string);
 
 if(timer_active){
   timer_timeout=setTimeout("run_mashing()",200);    
+}
+
+countdown_for_update = countdown_for_update - 1;
+if(countdown_for_update < 1){
+  countdown_for_update = 25;
+  chart_update_latest();
 }
 
 
