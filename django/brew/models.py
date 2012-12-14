@@ -1,4 +1,5 @@
 from django.db import models
+import time
 
 class Brew(models.Model):
     name = models.CharField(max_length=200)
@@ -21,7 +22,9 @@ class MashingTempLog(models.Model):
     brewing_day = models.ForeignKey(BrewingDay)
     degrees = models.CharField(max_length=3)    
     created = models.DateTimeField(auto_now_add=True)
-    
+    def get_seconds_offset(self):
+        first_log = MashingTempLog.objects.filter(brewing_day=self.brewing_day)[:1].get()
+        return int(time.mktime(self.created.timetuple()) - time.mktime(first_log.created.timetuple()))
 
 
 class Variable(models.Model):

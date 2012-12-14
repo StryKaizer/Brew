@@ -126,6 +126,7 @@ INSTALLED_APPS = (
     'djcelery',
     'djcelery.transport',
     'dajaxice',
+    'django_extensions',
     'brew',
 )
 DAJAXICE_MEDIA_PREFIX="dajaxice"

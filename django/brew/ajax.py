@@ -35,7 +35,6 @@ def chart_update_latest(request):
     brewing_day_id = 1
     data = {}
     data['chart'] = style_chart_data([MashingTempLog.objects.latest('id')])
-    
     return simplejson.dumps({'status':200, 'data': data})
 
 
@@ -45,6 +44,7 @@ def chart_update_latest(request):
 def style_chart_data(mashing_temp_logs):
     result = []
     for mashing_temp_log in mashing_temp_logs:
-        log = [mashing_temp_log.created.isoformat(), mashing_temp_log.degrees]
+        # log = [mashing_temp_log.created.isoformat(), mashing_temp_log.degrees]
+        log = [mashing_temp_log.get_seconds_offset(), mashing_temp_log.degrees]
         result.append(log)
     return result

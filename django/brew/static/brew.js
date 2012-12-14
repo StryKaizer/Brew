@@ -113,7 +113,8 @@ var options = {
             options.series[0].data = []
             for(item in data.data.chart){
               iso8601date = data.data.chart[item][0];
-              options.series[0].data.push([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
+              // options.series[0].data.push([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
+               options.series[0].data.push([iso8601date * 1000, parseFloat(data.data.chart[item][1])]);
             }
 
           chart = new Highcharts.Chart(options); 
@@ -128,7 +129,8 @@ var options = {
         options.series[0].data = []
         for(item in data.data.chart){
           iso8601date = data.data.chart[item][0];
-          chart.series[0].addPoint([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
+          // chart.series[0].addPoint([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
+          chart.series[0].addPoint([iso8601date * 1000, parseFloat(data.data.chart[item][1])]);
           $('#temperature').text(data.data.chart[item][1] + '°');
         }
 
