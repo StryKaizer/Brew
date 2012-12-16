@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block navbar %}   {% endblock %}
+
+{% block content %}
+
+<div class="hero-unit">
+        <h1>Brew.</h1>
+        <p>Rockabeery Mash Automation</p>
+      </div>
+
+<table class="table" data-provides="rowlink">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Brew</th>
+                  <th> </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="/brew/1/">29/12/2012</a></td>
+                  <td>Batch 009</td>
+                  <td class="nohref"><a href="#">Edit</a></td>
+                </tr>
+                <tr>
+                  <td><a href="/brew/1/">29/11/2012</a></td>
+                  <td>Batch 008</td>
+                  <td class="nohref"><a href="#">Edit</a></td>
+                </tr>                
+              </tbody>
+            </table>
+
+    {% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {% block extra_scripts %} 
+{% endblock %}

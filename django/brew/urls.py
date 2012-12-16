@@ -7,7 +7,8 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    url(r'^$', 'brew.views.index', name='index'),
+    url(r'^$', 'brew.views.batchlisting', name='batchlisting'),
+    url(r'^brew/(\d+)/$', 'brew.views.log', name='log'),
     # url(r'^brew/', include('brew.foo.urls')),
 
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

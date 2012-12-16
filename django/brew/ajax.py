@@ -2,7 +2,7 @@ from django.utils import simplejson
 from dajaxice.decorators import dajaxice_register
 from brew.tasks import init_mashing
 from brew.helpers import set_variable
-from brew.models import BrewingDay, MashingTempLog
+from brew.models import Batch, MashingTempLog
 
 from django.utils.dateformat import format
 
@@ -11,7 +11,7 @@ from django.utils.dateformat import format
 def start_mashing(request):
 
     set_variable('mashing_active', 'TRUE')
-    brewing_day = BrewingDay.objects.latest('id')
+    brewing_day = Batch.objects.latest('id')
     init_mashing.delay(brewing_day)
     return simplejson.dumps({'status':200})
 
@@ -25,7 +25,7 @@ def stop_mashing(request):
 def chart_update_all(request):
     brewing_day_id = 1
     data = {}
-    brewing_day = BrewingDay.objects.get(id=brewing_day_id)
+    brewing_day = Batch.objects.get(id=brewing_day_id)
     logs = MashingTempLog.objects.filter(brewing_day=brewing_day)
     data['chart'] = style_chart_data(logs)
     return simplejson.dumps({'status':200, 'data': data})
