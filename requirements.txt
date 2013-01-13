@@ -3,6 +3,7 @@ django==1.4.3
 Werkzeug==0.8.3
 django-extensions==1.0.2
 django-dajaxice==0.5.4
+south==0.7.6
 pytz==2012j
 billiard==2.7.3.19
 python-dateutil==1.5
