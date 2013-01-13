@@ -1,0 +1,5 @@
+# Brew. requirements TODO
+Werkzeug==0.8.3
+django-extensions==1.0.2
+django-dajaxice==0.5.4
+django-djcelery==3.0.10
