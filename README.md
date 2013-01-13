@@ -14,10 +14,10 @@ Brew is written in Python, Django, Javascript, jQuery, Bootstrap.
 ###Installation
 
 Clone project
-$ git clone https://github.com/StryKaizer/Brew.git
+    $ git clone https://github.com/StryKaizer/Brew.git
 
 Install python setup-tools
-$ sudo apt-get install python-setuptools
+    $ sudo apt-get install python-setuptools
 
 Install pip
 $ sudo easy_install pip
