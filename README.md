@@ -34,4 +34,4 @@ $ source ve/lib/activate
 Install python requirements
 $ sudo pip install -r requirements.txt
 
-TODO
+TOD
