@@ -1,6 +1,13 @@
-# Brew. requirements TODO
+# Brew. requirements
 django==1.4.3
 Werkzeug==0.8.3
 django-extensions==1.0.2
 django-dajaxice==0.5.4
-# django-djcelery==3.0.10
+pytz==2012j
+billiard==2.7.3.19
+python-dateutil==1.5
+kombu==2.5.4
+anyjson==0.3.3
+amqp==1.0.6
+celery==3.0.13
+django-celery==3.0.11

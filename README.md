@@ -17,28 +17,19 @@ Clone project
 
     git clone https://github.com/StryKaizer/Brew.git
 
-Install python setup-tools
+Install setup-tools, pip, virtualenv
 
     $ sudo apt-get install python-setuptools
-
-Install pip
-
     $ sudo easy_install pip
-
-Install virtualenv
-
     $ sudo pip install virtualenv
 
-Create virtual environment in your project
+Create and activate virtual environment in your Brew. folder
 
     $ virtualenv ve --no-site-packages
-
-Activate virtual environment
-
     $ source ve/lib/activate
 
 Install python requirements
 
-    $ sudo pip install -r requirements.txt
+    $ sudo ./ve/bin/pip install -r requirements.txt
 
 TODO, complete installation procedure
