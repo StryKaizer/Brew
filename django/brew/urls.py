@@ -4,6 +4,7 @@ from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 from django.conf import settings
 dajaxice_autodiscover()
 admin.autodiscover()
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = patterns('',
     # Examples:
@@ -15,3 +16,4 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
+urlpatterns += staticfiles_urlpatterns()
