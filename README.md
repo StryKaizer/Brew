@@ -30,8 +30,9 @@ Install pip and virtualenv
 
 Create and activate virtual environment in your Brew. folder
 
+    $ cd Brew/
     $ virtualenv ve --no-site-packages
-    $ source ve/lib/activate
+    $ source ve/bin/activate
 
 Install python requirements
 
@@ -48,17 +49,17 @@ Create vhost
         WSGIDaemonProcess brew python-path=/home/pi/Brew/django:/home/pi/Brew/ve/lib/python2.7/site-packages
         WSGIProcessGroup brew
         WSGIScriptAlias / /home/pi/Brew/django/brew/wsgi.py
-
+        
         # Static file alias so static files can be referenced by /static/
         Alias /static/ /home/pi/Brew/django/brew/static/
-
+        
         # Static files permissions
         # Used for serving static files.
         <Directory /home/pi/Brew/django/brew/static>
             Order deny,allow
             Allow from all
         </Directory>
-
+        
         # Project wsgi permissions
         # Used for serving django pages.
         <Directory /home/pi/Brew/django/brew>
