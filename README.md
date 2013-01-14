@@ -72,3 +72,6 @@ Create vhost
 
 
 
+Symlink Admin static folder
+    sudo ln -s /home/pi/Brew/ve/lib/python2.7/site-packages/django/contrib/admin/static/admin /home/pi/Brew/django/brew/static/admin
+    sudo ln -s /home/pi/Brew/ve/lib/python2.7/site-packages/dajaxice/templates/dajaxice /home/pi/Brew/django/brew/static/dajaxice
