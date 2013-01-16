@@ -19,9 +19,9 @@ Install required libraries
     $ sudo apt-get upgrade
     $ sudo apt-get install git apache2 mysql-server python-mysqldb libapache2-mod-wsgi python-setuptools libmysqlclient-dev python-dev php5 phpmyadmin
 
-Clone project
+Clone project including submodules
 
-    $ git clone https://github.com/StryKaizer/Brew.git
+    $ git clone --recursive https://github.com/StryKaizer/Brew.git
 
 Install pip and virtualenv
 
