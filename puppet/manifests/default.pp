@@ -98,6 +98,10 @@ package {
   require  => [ Package['python-pip'], Package['python-setuptools'] ],
 }
 
+# Create static directory
+file { "/brew/static":
+    ensure => "directory",
+}
 
 # NGINX
 class { 'nginx': 
@@ -116,7 +120,7 @@ nginx::resource::vhost { 'brew.pi':
 
 nginx::resource::location { 'brew.pi':
  ensure   => present,
- www_root => '/brew/djangoproject/brew/static',
+ www_root => '/brew/static',
  location => '/static',
  vhost    => 'brew.pi',
 }
