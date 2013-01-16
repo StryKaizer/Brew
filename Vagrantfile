@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 PROJECT_NAME = 'djangoproject'
-MOUNT_POINT  = '/home/vagrant/djangoproject'
+MOUNT_POINT  = '/brew'
 
 Vagrant::Config.run do |config|
 
@@ -11,7 +11,7 @@ Vagrant::Config.run do |config|
 
   config.vm.network :hostonly, "33.33.33.10"
 
-  config.vm.share_folder PROJECT_NAME, MOUNT_POINT, PROJECT_NAME
+  config.vm.share_folder PROJECT_NAME, MOUNT_POINT, "."
 
   config.vm.provision :puppet do |puppet|
     puppet.manifests_path = "puppet/manifests"
@@ -19,7 +19,7 @@ Vagrant::Config.run do |config|
     puppet.module_path    = "puppet/modules"
     puppet.facter = [
             ['project_name', PROJECT_NAME],
-            ['django_dir', MOUNT_POINT],
+            ['django_dir', MOUNT_POINT + '/' + PROJECT_NAME],
             ['django_url', 'djangoproject.local'],
             ['db_username', 'brew'],
             ['db_password', 'brew'],
