@@ -8,7 +8,15 @@ exec { 'make_update':
     command => 'sudo apt-get update',
 }
 
-# Setup MySQL
+
+# Custom packages
+package {
+['git-core', 'facter']:
+  ensure   => latest,
+  require  => Exec['make_update'],
+}
+
+# MYSQL
 class { 'mysql': 
 require => Exec['make_update'],
 }
@@ -30,78 +38,30 @@ grant    => ['all'],
 }
 
 
-# # Setup Memcached
-# package {
-#   'memcached': 
-#     ensure   => latest,
-#     require  => Exec['make_update'],
-# }
-
-# service { "memcached":
-#   ensure  => running,
-#   enable  => true,
-#   require => Package['memcached'];
-# }
-
-# Install required Packages
-package {
-['git-core', 'curl', 'facter']:
-  ensure   => latest,
-  require  => Exec['make_update'],
+# PYTHON
+class { 'python':
+  version    => '2.7',
+  dev        => true,
+  virtualenv => true,
+  gunicorn   => true,
 }
 
-# package {
-#   ['python-pip', 'python-software-properties', 'python-setuptools', 'python-memcache', 'python-dev', 'build-essential']:
-#     ensure   => latest,
-#     require  => Exec['make_update'];
-# }
-
-package {
-['python-pip', 'python-setuptools', 'python-dev', 'build-essential']:
-  ensure   => latest,
-  require  => Exec['make_update'];
+# WARNING: ve directory needs to be outside vagrant shared folder (virtualbox issue)
+python::virtualenv { '/brew-ve':
+  ensure       => present,
+  version      => '2.7',
+  # requirements => '/brew/djangoproject/requirements.txt',  # For some reason this doesnt work
 }
 
-package {
-'Django':
-  ensure   => '1.4.1',
-  provider => pip,
-  require  => [ Package['python-pip'], Package['python-setuptools'] ],
-}
-
-package {
-'django-dajaxice':
-  ensure   => '0.2',
-  provider => pip,
-  require  => [ Package['python-pip'], Package['python-setuptools'] ],
-}
-
-package {
-'django-celery':
-  ensure   => '3.0.4',
-  provider => pip,
-  require  => [ Package['python-pip'], Package['python-setuptools'] ],
-}
-
-package {
-'django-extensions':
-  ensure   => '1.0.2',
-  provider => pip,
-  require  => [ Package['python-pip'], Package['python-setuptools'] ],
-}
-
-# GUNICORN
-package {
-['gunicorn', ]:
-  ensure   => latest,
-  provider => pip,
-  require  => [ Package['python-pip'], Package['python-setuptools'] ],
+python::requirements { '/brew/djangoproject/requirements.txt':
+  virtualenv => '/brew-ve',
 }
 
 # Create static directory
 file { "/brew/static":
     ensure => "directory",
 }
+
 
 # NGINX
 class { 'nginx': 
@@ -110,13 +70,8 @@ class { 'nginx':
 
 nginx::resource::vhost { 'brew.pi':
   ensure   => present,
-  proxy => 'http://127.0.0.1:8888',
+  proxy => 'http://127.0.0.1:8000',
 }
-
-# nginx::resource::vhost { 'brew.pi':
-#   ensure   => present,
-#   www_root => '/brew/djangoproject',
-# }
 
 nginx::resource::location { 'brew.pi':
  ensure   => present,

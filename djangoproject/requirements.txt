@@ -1,0 +1,14 @@
+# Brew. requirements
+# Werkzeug==0.8.3
+# south==0.7.6
+#pytz==2012j
+#python-dateutil==1.5
+#kombu==2.5.4
+#anyjson==0.3.3
+#amqp==1.0.6
+django==1.4.1
+django-celery==3.0.4
+django-extensions==1.0.2
+django-dajaxice==0.2
+#billiard==2.7.3.12
+#celery==3.0.5
