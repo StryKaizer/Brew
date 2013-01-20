@@ -39,7 +39,7 @@ define python::requirements (
     default  => "--proxy=${proxy}",
   }
 
-  $req_crc = "${requirements}.sha1"
+  $req_crc = "${virtualenv}/requirements.sha1"
 
   file { $requirements:
     ensure  => present,
