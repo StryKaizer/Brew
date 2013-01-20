@@ -1,5 +1,3 @@
-# Puppet config based on https://github.com/tsteur/django-dev-vm
-
 Exec {
   path => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
 }
@@ -37,6 +35,10 @@ host     => 'localhost',
 grant    => ['all'],
 }
 
+# Create static directory
+file { "/brew-static":
+    ensure => "directory",
+}
 
 # PYTHON
 class { 'python':
@@ -46,22 +48,26 @@ class { 'python':
   gunicorn   => true,
 }
 
-# WARNING: ve directory needs to be outside vagrant shared folder (virtualbox issue)
+# WARNING: Due to virtualbox issue, virtual environment directory needs to be outside our vagrant shared folder
 python::virtualenv { '/brew-ve':
   ensure       => present,
   version      => '2.7',
-  # requirements => '/brew/djangoproject/requirements.txt',  # For some reason this doesnt work
 }
 
-python::requirements { '/brew/djangoproject/requirements.txt':
+python::requirements { '/brew-project/djangoproject/requirements.txt':
   virtualenv => '/brew-ve',
+  require => Python::Virtualenv['/brew-ve'],
 }
 
-# Create static directory
-file { "/brew/static":
-    ensure => "directory",
+python::gunicorn { 'vhost':
+  ensure      => present,
+  virtualenv  => '/brew-ve',
+  mode        => 'django',
+  dir         => '/brew-project/djangoproject',
+  bind        => '127.0.0.1:8000',
+  environment => 'prod',
+  template    => 'python/gunicorn.erb',
 }
-
 
 # NGINX
 class { 'nginx': 
@@ -75,7 +81,7 @@ nginx::resource::vhost { 'brew.pi':
 
 nginx::resource::location { 'brew.pi':
  ensure   => present,
- www_root => '/brew/static',
+ www_root => '/brew-static',
  location => '/static',
  vhost    => 'brew.pi',
 }
