@@ -45,7 +45,6 @@ class { 'python':
   version    => '2.7',
   dev        => true,
   virtualenv => true,
-  gunicorn   => true,
 }
 
 # WARNING: Due to virtualbox issue, virtual environment directory needs to be outside our vagrant shared folder
@@ -59,15 +58,15 @@ python::requirements { '/brew-project/djangoproject/requirements.txt':
   require => Python::Virtualenv['/brew-ve'],
 }
 
-python::gunicorn { 'vhost':
-  ensure      => present,
-  virtualenv  => '/brew-ve',
-  mode        => 'django',
-  dir         => '/brew-project/djangoproject',
-  bind        => '127.0.0.1:8000',
-  environment => 'prod',
-  template    => 'python/gunicorn.erb',
-}
+# python::gunicorn { 'vhost':
+#   ensure      => present,
+#   virtualenv  => '/brew-ve',
+#   mode        => 'django',
+#   dir         => '/brew-project/djangoproject',
+#   bind        => '127.0.0.1:8000',
+#   environment => 'prod',
+#   template    => 'python/gunicorn.erb',
+# }
 
 # NGINX
 class { 'nginx': 
