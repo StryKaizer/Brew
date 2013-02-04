@@ -8,6 +8,8 @@
 #amqp==1.0.6
 #billiard==2.7.3.12
 #celery==3.0.5
+
+mysql-python
 django==1.4.1
 django-celery==3.0.4
 django-extensions==1.0.2

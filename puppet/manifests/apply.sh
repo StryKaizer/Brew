@@ -1,0 +1,1 @@
+puppet apply --modulepath=/brew-project/puppet/modules  brew.pp
