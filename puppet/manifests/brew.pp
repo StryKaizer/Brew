@@ -14,20 +14,14 @@ exec { 'make_update':
     command => 'sudo apt-get update',
 }
 
-
 # Custom packages
 package {
-['git-core', 'facter', 'nano', 'libmysqlclient-dev']:
+['git-core', 'facter', 'nano', 'libmysqlclient-dev', 'htop']:
   ensure   => latest,
   require  => Exec['make_update'],
 }
 
-
-
-
-
 ### MYSQL ###
-
 class { 'mysql':
 require => Exec['make_update'],
 }
@@ -42,10 +36,11 @@ require => Exec['make_update'],
 }
 
 mysql::db { $db_name:
-user     => $db_username,
-password => $db_password,
-host     => 'localhost',
-grant    => ['all'],
+  user     => $db_username,
+  password => $db_password,
+  host     => 'localhost',
+  grant    => ['all'],
+  before => Exec['syncdb'],
 }
 
 
@@ -70,51 +65,72 @@ python::requirements { '/brew-project/djangoproject/requirements.txt':
   require => Python::Virtualenv['/brew-ve'],
 }
 
-# Create static directory
-file { "/brew-static":
-    ensure => "directory",
-    before => Exec['collectstatic'],
+# QUICK AND DIRTY: TODO, MAKE THIS NICE!
+
+# Sync db
+exec { 'syncdb':
+  command => '/brew-ve/bin/python /brew-project/djangoproject/manage.py syncdb --noinput',
+  require => Python::Requirements['/brew-project/djangoproject/requirements.txt'],
+  logoutput => "on_failure",
 }
+# Run dev server
+# exec{ 'rundevserver':
+#   command => '/brew-ve/bin/python /brew-project/djangoproject/manage.py runserver 33.33.33.10:8000',
+#   require => Exec['syncdb'],
+# }
+# # Run celeryd
+# exec{ 'runceleryd':
+#   command => '/brew-ve/bin/python /brew-project/djangoproject/manage.py celeryd',
+#   require => Exec['syncdb'],
+# }
+
+# END QUICK AND DIRTY
+
+# Create static directory
+# file { "/brew-static":
+#     ensure => "directory",
+#     before => Exec['collectstatic'],
+# }
 
 # Generate static content
-exec{ 'collectstatic':
-  command => '/brew-ve/bin/python /brew-project/djangoproject/manage.py collectstatic --noinput',
-  require => Python::Requirements['/brew-project/djangoproject/requirements.txt'],
-}
+# exec{ 'collectstatic':
+#   command => '/brew-ve/bin/python /brew-project/djangoproject/manage.py collectstatic --noinput',
+#   require => Python::Requirements['/brew-project/djangoproject/requirements.txt'],
+# }
 
 
 ### SUPERVISOR, for running gunicorn and gevent ###
-package { 'supervisor': 
-    ensure  => '3.0b1',
-    provider => pip,
-}
+# package { 'supervisor': 
+#     ensure  => '3.0b1',
+#     provider => pip,
+# }
 
-file { '/etc/supervisord.conf':
-  ensure => file,
-  mode   => 600,
-  source => '/brew-project/puppet/manifests/supervisord.conf',
-  require => Package['supervisor'],
-}
+# file { '/etc/supervisord.conf':
+#   ensure => file,
+#   mode   => 600,
+#   source => '/brew-project/puppet/manifests/supervisord.conf',
+#   require => Package['supervisor'],
+# }
 
-exec { 'supervisord':
-    command => 'supervisord',
-    require => File['/etc/supervisord.conf']
-}
+# exec { 'supervisord':
+#     command => 'supervisord',
+#     require => File['/etc/supervisord.conf']
+# }
 
 
 ### NGINX ###
-class { 'nginx': 
-  require => Exec['make_update'],
-}
+# class { 'nginx': 
+#   require => Exec['make_update'],
+# }
 
-nginx::resource::vhost { 'brew.pi':
-  ensure   => present,
-  proxy => 'http://127.0.0.1:8000',
-}
+# nginx::resource::vhost { 'brew.pi':
+#   ensure   => present,
+#   proxy => 'http://127.0.0.1:8000',
+# }
 
-nginx::resource::location { 'brew.pi':
- ensure   => present,
- location => '/static/',
- location_alias => '/brew-static/',
- vhost    => 'brew.pi',
-}
+# nginx::resource::location { 'brew.pi':
+#  ensure   => present,
+#  location => '/static/',
+#  location_alias => '/brew-static/',
+#  vhost    => 'brew.pi',
+# }

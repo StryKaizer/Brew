@@ -1,3 +1,3 @@
 bind = "127.0.0.1:8000"
-logﬁle = "/brew-ve/gunicorn.log"
+logfile = "/home/vagrant/gunicorn.log"
 workers = 3

@@ -3,7 +3,6 @@ from dajaxice.decorators import dajaxice_register
 from brew.tasks import init_mashing
 from brew.helpers import set_variable
 from brew.models import Batch, MashingTempLog
-
 from django.utils.dateformat import format
 
 
