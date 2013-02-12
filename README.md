@@ -59,6 +59,7 @@ Hosting
     $ sudo ln -s /etc/nginx/sites-available/brewpi.conf /etc/nginx/sites-enabled/brewpi.conf
     $ sudo /etc/init.d/nginx start
 
+    Start supervisord as a service: https://github.com/gcollazo/Fabulous/issues/4
 
 
 

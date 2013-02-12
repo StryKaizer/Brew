@@ -3,12 +3,12 @@
 # south==0.7.6
 #pytz==2012j
 #python-dateutil==1.5
-#kombu==2.5.4
-#anyjson==0.3.3
 #amqp==1.0.6
 #billiard==2.7.3.12
-#celery==3.0.5
 
+kombu==2.3.2
+celery==3.0.5
+anyjson==0.3.3
 mysql-python
 django==1.4.1
 django-celery==3.0.4
