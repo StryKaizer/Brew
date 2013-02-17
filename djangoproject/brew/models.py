@@ -16,6 +16,7 @@ class MashingSchemeItem(models.Model):
 # The model Batch is used to define a brewing day, which will hold logs etc.
 class Batch(models.Model):
     brew = models.ForeignKey(Brew)
+    number = models.IntegerField(max_length=3)
     brewing_date = models.DateTimeField('Brewing date')
     mashing_scheme_start = models.DateTimeField()
     def __unicode__(self):
@@ -23,12 +24,14 @@ class Batch(models.Model):
    
 # The model MashingTempLog is used to hold data of 1 measure for a certain Batch.
 class MashingTempLog(models.Model):
-    brewing_day = models.ForeignKey(Batch)
+    batch = models.ForeignKey(Batch)
     degrees = models.CharField(max_length=3)    
     created = models.DateTimeField(auto_now_add=True)
     def get_seconds_offset(self):
-        first_log = MashingTempLog.objects.filter(brewing_day=self.brewing_day)[:1].get()
+        first_log = MashingTempLog.objects.filter(batch=self.batch)[:1].get()
         return int(time.mktime(self.created.timetuple()) - time.mktime(first_log.created.timetuple()))
+    def __unicode__(self):
+        return str(self.id) + ' - ' + str(self.created)
 
 # The model Variable is used for a simple key-value store functionality.
 class Variable(models.Model):

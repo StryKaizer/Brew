@@ -5,7 +5,7 @@
 {% block content %}
 
 <div class="page-header">
-  <h1>Batch #009 - Mashing log</h1>
+  <h1>Batch #{{ batch.number|stringformat:"03d" }} - Mashing log</h1>
 </div>
 
 
@@ -21,13 +21,13 @@
             <h1 id="timer">00:00:00</h1>
             
             <p>
-                <a href="javascript:void(0)" id="mashing-start" class="btn btn-large btn-success" onclick="Dajaxice.brew.start_mashing(mashing_started)"><i class="icon-play icon-white"></i> Start</a>     
+                <a href="javascript:void(0)" id="mashing-start" class="btn btn-large btn-success" onclick="Dajaxice.brew.start_mashing(mashing_started, {'batch_id': {{ batch.id }}})"><i class="icon-play icon-white"></i> Start</a>
 
-                           <a href="javascript:void(0)" id="mashing-start" class="btn btn-large btn-success" onclick="chart_update_all()"><i class="icon-play icon-white"></i> Update All</a>
-                                <a href="javascript:void(0)" id="mashing-start" class="btn btn-large btn-success" onclick="chart_update_latest()"><i class="icon-play icon-white"></i> Update Latest</a>
+
                 
 
                 <a data-toggle="modal" href="#modalStopMashing" id="mashing-stop" class="btn btn-large btn-danger disabled"><i class="icon-stop icon-white"></i> Stop</a>
+
                 
             </p>
             <h1 id="temperature">50,3°</h1>
@@ -69,11 +69,13 @@
         </tr>
     </tbody>
 </table>
+        <a href="javascript:void(0)" id="update-all" class="btn btn-mini btn-success" onclick="chart_update_all()"><i class="icon-refresh icon-white"></i> Update All</a>
+        <a href="javascript:void(0)" id="update-latest" class="btn btn-mini btn-success" onclick="chart_update_latest()"><i class="icon-repeat icon-white"></i> Update Latest</a>
+        <a href="javascript:void(0)" id="clearAll" onclick="Dajaxice.brew.delete_mashing_data(delete_mashing_data_callback, {'batch_id': {{ batch.id }}})" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i> Delete all mashing data</a>
 
+</div>
+</div>
 
-</div>
-</div>
-</div>
 
 
 <div class="modal hide" id="modalStopMashing">
@@ -119,6 +121,10 @@
 
 
     <script type="text/javascript">
+        if(typeof Brew=='undefined'){ Brew = {}; }
+
+        Brew.batch_id = {{ batch.id }};
+
     $(function () {
         var chart;
         $(document).ready(function() {
