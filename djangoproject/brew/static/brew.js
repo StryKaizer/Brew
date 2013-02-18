@@ -27,6 +27,8 @@ var options = {
         },
         yAxis: {
           title: null,
+          max: 100,
+            min: 20,
 
           plotLines: [{
             value: 0,

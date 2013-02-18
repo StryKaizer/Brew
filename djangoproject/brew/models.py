@@ -26,7 +26,7 @@ class Batch(models.Model):
 # The model MashingTempLog is used to hold data of 1 measure for a certain Batch.
 class MashingTempLog(models.Model):
     batch = models.ForeignKey(Batch)
-    degrees = models.CharField(max_length=3)    
+    degrees = models.FloatField()
     created = models.DateTimeField(auto_now_add=True)
 
     def get_seconds_offset(self):

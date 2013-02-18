@@ -13,7 +13,7 @@
 
 <div class="row">
     <div class="span8">
-        <div id="mashing-tlog-graph" style="width: 600px; height: 300px; margin: 0 auto"></div>
+        <div id="mashing-tlog-graph" style="width: 760px; height: 500px; margin: 0 auto"></div>
     </div>
     <div class="span4 centered-text">
         <div class="hero-unit">
@@ -30,7 +30,7 @@
 
 
             </p>
-            <h1 id="temperature">50,3°</h1>
+            <h1 id="temperature">---°</h1>
         </div>
 
         <h1></h1>
@@ -46,30 +46,21 @@
             </tr>
             </thead>
             <tbody>
+
+            {% for mashingstep in batch.brew.mashingschemeitem_set.all %}
             <tr class="row-success">
-                <td>1</td>
-                <td>52</td>
-                <td>10</td>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ mashingstep.minutes }}</td>
+                <td>{{ mashingstep.degrees }}</td>
 
-                <td>Finished</td>
+                <td>Inactive</td>
             </tr>
-            <tr>
-                <td>2</td>
-                <td>62</td>
-                <td>60</td>
+            {% endfor %}
 
-                <td>00:28:35</td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td>72</td>
-                <td>30</td>
 
-                <td>Awaiting</td>
-            </tr>
             </tbody>
         </table>
-        
+
         <a href="javascript:void(0)" id="clearAll" onclick="Dajaxice.brew.delete_mashing_data(delete_mashing_data_callback, {'batch_id': {{ batch.id }}})" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i> Delete all mashing data</a>
 
     </div>

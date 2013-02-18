@@ -129,7 +129,7 @@ INSTALLED_APPS = (
     'gunicorn',
     'brew',
 )
-DAJAXICE_MEDIA_PREFIX="dajaxice"
+DAJAXICE_MEDIA_PREFIX = "dajaxice"
 
 BROKER_URL = 'django://'
 # A sample logging configuration. The only tangible logging
