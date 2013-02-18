@@ -5,7 +5,7 @@
 {% block content %}
 
 <div class="page-header">
-  <h1>Batch #{{ batch.number|stringformat:"03d" }} - Mashing log</h1>
+    <h1>Batch #{{ batch.number|stringformat:"03d" }} - Mashing log</h1>
 </div>
 
 
@@ -17,63 +17,62 @@
     </div>
     <div class="span4 centered-text">
         <div class="hero-unit">
-            
+
             <h1 id="timer">00:00:00</h1>
-            
+
             <p>
                 <a href="javascript:void(0)" id="mashing-start" class="btn btn-large btn-success" onclick="Dajaxice.brew.start_mashing(mashing_started, {'batch_id': {{ batch.id }}})"><i class="icon-play icon-white"></i> Start</a>
 
 
-                
+
 
                 <a data-toggle="modal" href="#modalStopMashing" id="mashing-stop" class="btn btn-large btn-danger disabled"><i class="icon-stop icon-white"></i> Stop</a>
 
-                
+
             </p>
             <h1 id="temperature">50,3°</h1>
         </div>
-        
+
         <h1></h1>
-        
+
 
         <table class="table table-bordered table-striped">
             <thead>
-              <tr>
+            <tr>
                 <th>#</th>
                 <th>Degrees</th>
                 <th>Minutes</th>
                 <th>Status</th>
             </tr>
-        </thead>
-        <tbody>
-          <tr class="row-success">
-            <td>1</td>
-            <td>52</td>
-            <td>10</td>
-            
-            <td>Finished</td>
-        </tr>
-        <tr>
-            <td>2</td>
-            <td>62</td>
-            <td>60</td>
-            
-            <td>00:28:35</td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td>72</td>
-            <td>30</td>
-            
-            <td>Awaiting</td>
-        </tr>
-    </tbody>
-</table>
-        <a href="javascript:void(0)" id="update-all" class="btn btn-mini btn-success" onclick="chart_update_all()"><i class="icon-refresh icon-white"></i> Update All</a>
-        <a href="javascript:void(0)" id="update-latest" class="btn btn-mini btn-success" onclick="chart_update_latest()"><i class="icon-repeat icon-white"></i> Update Latest</a>
+            </thead>
+            <tbody>
+            <tr class="row-success">
+                <td>1</td>
+                <td>52</td>
+                <td>10</td>
+
+                <td>Finished</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>62</td>
+                <td>60</td>
+
+                <td>00:28:35</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>72</td>
+                <td>30</td>
+
+                <td>Awaiting</td>
+            </tr>
+            </tbody>
+        </table>
+        
         <a href="javascript:void(0)" id="clearAll" onclick="Dajaxice.brew.delete_mashing_data(delete_mashing_data_callback, {'batch_id': {{ batch.id }}})" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i> Delete all mashing data</a>
 
-</div>
+    </div>
 </div>
 
 
@@ -86,21 +85,14 @@
     <div class="modal-body">
         <p>Are you sure you want to stop the mashing process?<br/>
             Logging will stop and reset after this.</p>
-        </div>
-        <div class="modal-footer">
-            <a href="#" class="btn" data-dismiss="modal">Close</a>
-            <a href="#"  onclick="Dajaxice.brew.stop_mashing(mashing_stopped)" class="btn btn-primary">Stop mashing</a>
-        </div>
     </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+        <a href="#"  onclick="Dajaxice.brew.stop_mashing(mashing_stopped)" class="btn btn-primary">Stop mashing</a>
+    </div>
+</div>
 
-    {% endblock %}
-
-
-
-
-
-
-
+{% endblock %}
 
 
 
@@ -109,28 +101,31 @@
 
 
 
-    {% block extra_scripts %} 
-    <script type="text/javascript"> 
+
+
+
+
+
+
+
+{% block extra_scripts %}
+<script type="text/javascript">
     time_mashing_started = null;
     timer_active = false;
-    </script>
+</script>
 <script src="http://code.highcharts.com/highcharts.js"></script>
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
-    
-    {# <script src="kapot{{ STATIC_URL }}highcharts/js/highcharts.js"></script> #}
+
+{# <script src="kapot{{ STATIC_URL }}highcharts/js/highcharts.js"></script> #}
 
 
-    <script type="text/javascript">
-        if(typeof Brew=='undefined'){ Brew = {}; }
+<script type="text/javascript">
+    if(typeof Brew=='undefined'){ Brew = {}; }
+    Brew.batch_id = {{ batch.id }};
+    Brew.is_started = {% if is_started %}1{% else %}0{% endif %};
 
-        Brew.batch_id = {{ batch.id }};
-
-    $(function () {
-        var chart;
-        $(document).ready(function() {
- //           chart = new Highcharts.Chart();
-});
-
-});
+    if(Brew.is_started){
+        chart_update_all();
+    }
 </script>
 {% endblock %}
