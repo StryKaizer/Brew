@@ -1,5 +1,6 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <aJSON.h>
 
 // Data wire is plugged into pin 2 on the Arduino
 # define ONE_WIRE_BUS 2
@@ -12,41 +13,104 @@ DallasTemperature sensors(&oneWire);
 
 
 
-
+// Mapping
 int ledGreen = 13;
 int ledYellow = 12;
-int ledRed = 11;
+int heatRelay = 11; // Red LED atm
+
+// Helpers
 int incomingByte = 0; 
+unsigned long lastPrint = 0;
+
+aJsonStream serial_stream(&Serial);
+
 void setup(void)
 {
   pinMode(ledGreen, OUTPUT);
   pinMode(ledYellow, OUTPUT);
-  pinMode(ledRed, OUTPUT);
+  pinMode(heatRelay, OUTPUT);
   
   // start serial port
   Serial.begin(9600);
 
-  // Start up the library
+  // Start up the temperature sensor library for DS18B20 sensor
   sensors.begin(); // IC Default 9 bit. If you have troubles consider upping it 12. Ups the delay giving the IC more time to process the temperature measurement
 }
 
 
 void loop(void)
 { 
-    digitalWrite(ledRed, HIGH);   // sets the LED on
-  delay(1000); 
-      digitalWrite(ledRed, LOW);   // sets the LED on
-      incomingByte = Serial.read();
-      Serial.println(incomingByte, DEC);
-  delay(1000); 
+
+  // Handle incoming requests
+//  incomingByte = Serial.read();
+//  switch (incomingByte) {
+//    case 72:  // = H, Turn on Heat
+//      digitalWrite(heatRelay, HIGH);
+//      break;
+//    case 104: // = H, Turn off Heat
+//      digitalWrite(heatRelay, LOW);
+//      break;
+//  }
   
-  // call sensors.requestTemperatures() to issue a global temperature 
-  // request to all devices on the bus
-  sensors.requestTemperatures(); // Send the command to get temperatures
+    if (serial_stream.available()) {
+    /* First, skip any accidental whitespace like newlines. */
+    serial_stream.skip();
+  }
+
+  if (serial_stream.available()) {
+    /* Something real on input, let's take a look. */
+    aJsonObject *msg = aJson.parse(&serial_stream);
+    processMessage(msg);
+    aJson.deleteItem(msg);
+  }
   
-  Serial.print("{'S1':");
-  Serial.print(sensors.getTempCByIndex(0)); // Why "byIndex"? You can have more than one IC on the same bus. 0 refers to the first IC on the wire
-  Serial.println("}");
+    
+  // Handle outgoing data
+//  if (millis() - lastPrint > 1000) {  // Not sure if we need the 1sec delay
+    
+    aJsonObject *msg = getOutputJSON();
+    aJson.print(msg, &serial_stream);
+    Serial.println(); /* Add newline. */
+    aJson.deleteItem(msg);
+    lastPrint = millis();
+//}
   
+}
+
+
+/* Process message like: { "pwm": { "8": 0, "9": 128 } } */
+void processMessage(aJsonObject *msg)
+{
+  aJsonObject *heat = aJson.getObjectItem(msg, "heat");
+  if (!heat) {
+    Serial.println("no heat data");
+    return;
+  }else{
+    Serial.println("yay");
+  }
+  if (heat->type != aJson_Int) {
+    Serial.print("invalid data type ");
+    Serial.print(heat->type, DEC);
+    return;
+  }
+  analogWrite(heatRelay, heat->valueint);
+}
+
+
+
+aJsonObject *getOutputJSON()
+{
+  aJsonObject *msg = aJson.createObject();
+  
+  //PWM data
+  aJsonObject *heat = aJson.createItem(digitalRead(heatRelay));
+  aJson.addItemToObject(msg, "heat", heat);
+  
+  // Temperature sensor data
+  sensors.requestTemperatures();
+  aJsonObject *t1 = aJson.createItem(sensors.getTempCByIndex(0));
+  aJson.addItemToObject(msg, "t1", t1);
+
+  return msg;
 }
 
