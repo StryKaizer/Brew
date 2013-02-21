@@ -14,8 +14,8 @@ DallasTemperature sensors(&oneWire);
 
 
 // Mapping
-int ledGreen = 13;
-int ledYellow = 12;
+int stirRelay = 13;
+int ignitionRelay = 12;
 int heatRelay = 11; // Red LED atm
 
 // Helpers
@@ -26,8 +26,8 @@ aJsonStream serial_stream(&Serial);
 
 void setup(void)
 {
-  pinMode(ledGreen, OUTPUT);
-  pinMode(ledYellow, OUTPUT);
+  pinMode(stirRelay, OUTPUT);
+  pinMode(ignitionRelay, OUTPUT);
   pinMode(heatRelay, OUTPUT);
   
   // start serial port
@@ -81,23 +81,43 @@ void loop(void)
 /* Process message like: { "pwm": { "8": 0, "9": 128 } } */
 void processMessage(aJsonObject *msg)
 {
+  
+  // HEAT
   aJsonObject *heat = aJson.getObjectItem(msg, "heat");
+  // Validation
   if (!heat) {
     Serial.println("no heat data");
     return;
-  }else{
-    Serial.println("yay");
   }
   if (heat->type != aJson_Int) {
-    Serial.print("invalid data type ");
-    Serial.print(heat->type, DEC);
+    Serial.println("invalid data type ");
+    Serial.println(heat->type, DEC);
     return;
   }
-  analogWrite(heatRelay, heat->valueint);
+  // Set heat value
+ digitalWrite(heatRelay, heat->valueint);
+ 
+   // STIR
+  aJsonObject *stir = aJson.getObjectItem(msg, "stir");
+  // Validation
+  if (!stir) {
+    Serial.println("no stir data");
+    return;
+  }
+  if (stir->type != aJson_Int) {
+    Serial.println("invalid data type ");
+    Serial.println(stir->type, DEC);
+    return;
+  }
+  // Set stir value
+ digitalWrite(stirRelay, stir->valueint);
 }
 
 
 
+/**
+* Create JSON for output to serial port
+**/
 aJsonObject *getOutputJSON()
 {
   aJsonObject *msg = aJson.createObject();
@@ -105,6 +125,8 @@ aJsonObject *getOutputJSON()
   //PWM data
   aJsonObject *heat = aJson.createItem(digitalRead(heatRelay));
   aJson.addItemToObject(msg, "heat", heat);
+  aJsonObject *stir = aJson.createItem(digitalRead(stirRelay));
+  aJson.addItemToObject(msg, "stir", stir);
   
   // Temperature sensor data
   sensors.requestTemperatures();
