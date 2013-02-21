@@ -6,6 +6,7 @@ locations = [
     '/dev/ttyUSB6', '/dev/ttyUSB7', '/dev/ttyUSB8', '/dev/ttyUSB9',
     '/dev/ttyS0', '/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5',
     '/dev/ttyS6', '/dev/ttyS7', '/dev/ttyS8', '/dev/ttyS9',
+    '/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyACM2',
     ]
 
 for device in locations:
