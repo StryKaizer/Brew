@@ -12,22 +12,27 @@
 <table class="table" data-provides="rowlink">
               <thead>
                 <tr>
-                  <th>Date</th>
+                    <th>Batch</th>
+                  <th>Brewing Date</th>
                   <th>Brew</th>
+
                   <th> </th>
                 </tr>
               </thead>
               <tbody>
+
+
+              {% for batch in batches %}
                 <tr>
-                  <td><a href="/brew/1/">29/12/2012</a></td>
-                  <td>Batch 009</td>
+                    <td>#{{ batch.number|stringformat:"03d" }}</td>
+                  <td><a href="/brew/{{ batch.id }}/">{{ batch.brewing_date|date:"D j M Y" }}</a></td>
+                  <td>{{ batch.brew.name }}</td>
+
                   <td class="nohref"><a href="#">Edit</a></td>
                 </tr>
-                <tr>
-                  <td><a href="/brew/1/">29/11/2012</a></td>
-                  <td>Batch 008</td>
-                  <td class="nohref"><a href="#">Edit</a></td>
-                </tr>                
+              {% endfor %}
+
+              {{ test }}
               </tbody>
             </table>
 

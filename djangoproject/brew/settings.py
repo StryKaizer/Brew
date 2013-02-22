@@ -15,9 +15,9 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'brewpi',                      # Or path to database file if using sqlite3.
-        'USER': 'brewpi',                      # Not used with sqlite3.
-        'PASSWORD': 'brewpi',                  # Not used with sqlite3.
+        'NAME': 'brew',                      # Or path to database file if using sqlite3.
+        'USER': 'brew',                      # Not used with sqlite3.
+        'PASSWORD': 'brew',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
@@ -117,11 +117,11 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-#    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'south',
     'djcelery',
     'djcelery.transport',
     'dajaxice',
@@ -129,7 +129,7 @@ INSTALLED_APPS = (
     'gunicorn',
     'brew',
 )
-DAJAXICE_MEDIA_PREFIX="dajaxice"
+DAJAXICE_MEDIA_PREFIX = "dajaxice"
 
 BROKER_URL = 'django://'
 # A sample logging configuration. The only tangible logging

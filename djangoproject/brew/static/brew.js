@@ -27,6 +27,8 @@ var options = {
         },
         yAxis: {
           title: null,
+          max: 100,
+            min: 20,
 
           plotLines: [{
             value: 0,
@@ -105,10 +107,12 @@ var options = {
 
       // Load all data in graph, prolly only do this first time
       function chart_update_all(){
-        Dajaxice.brew.chart_update_all(callback_chart_update_all);
+        Dajaxice.brew.chart_update(callback_chart_update_all, {'batch_id' : Brew.batch_id});
       }
       function callback_chart_update_all(data){
         check_response(data);
+
+          Brew.latest_templog_id = data.data.latest_templog_id;
 
             options.series[0].data = []
             for(item in data.data.chart){
@@ -122,10 +126,11 @@ var options = {
 
       // Load latest data in graph
       function chart_update_latest(){
-        Dajaxice.brew.chart_update_latest(callback_chart_update_latest);
+        Dajaxice.brew.chart_update(callback_chart_update_latest, {'batch_id' : Brew.batch_id, 'greaterthan_templog_id' : Brew.latest_templog_id});
       }
       function callback_chart_update_latest(data){
         check_response(data);
+          Brew.latest_templog_id = data.data.latest_templog_id;
         options.series[0].data = []
         for(item in data.data.chart){
           iso8601date = data.data.chart[item][0];
@@ -161,4 +166,12 @@ if(countdown_for_update < 1){
 }
 
 
+}
+
+
+
+
+function delete_mashing_data_callback(data){
+    alert('Mash data deleted');
+    chart_update_all();
 }

@@ -1,6 +1,6 @@
 # Brew. requirements
 # Werkzeug==0.8.3
-# south==0.7.6
+south==0.7.6
 #pytz==2012j
 #python-dateutil==1.5
 #amqp==1.0.6
