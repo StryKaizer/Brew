@@ -33,6 +33,8 @@ def chart_update(request, batch_id, greaterthan_templog_id=None):
     else:
         latest_templog_id = None
 
+
+
     data = {'chart': style_chart_data(logs), 'latest_templog_id': latest_templog_id}
     return simplejson.dumps({'status': 200, 'data': data})
 

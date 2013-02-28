@@ -1,6 +1,6 @@
 from celery import task
 from brew.models import MashingTempLog
-from brew.helpers import get_variable
+from brew.helpers import get_variable, set_variable
 from time import sleep
 from nanpy import DallasTemperature
 from random import uniform
@@ -8,6 +8,9 @@ from django.conf import settings
 
 @task()
 def init_mashing(batch):
+
+
+    set_variable('mashing_batch_id_active', str(batch.id))
     # Start up arduino connection
     if not settings.ARDUINO_SIMULATION:
         sensor = DallasTemperature(2)
@@ -26,4 +29,5 @@ def init_mashing(batch):
 
         MashingTempLog.objects.create(batch=batch, degrees=temp)
 
+    set_variable('mashing_batch_id_active', "0")
     return 'Mashing proces ended'

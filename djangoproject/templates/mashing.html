@@ -115,8 +115,22 @@
     Brew.batch_id = {{ batch.id }};
     Brew.is_started = {% if is_started %}1{% else %}0{% endif %};
 
+    Brew.seconds_running = {% if seconds_running %}{{ seconds_running}}{% else %}0{% endif %};
+    Brew.is_running = {% if is_running %}1{% else %}0{% endif %};
+
     if(Brew.is_started){
         chart_update_all();
+    }
+
+
+    if(Brew.is_running){
+        var dateNow = new Date();
+        time_mashing_started = new Date(dateNow.getTime() - Brew.seconds_running*1000);
+        timer_active = true;
+        run_mashing();
+
+        $('#mashing-start').addClass('disabled');
+        $('#mashing-stop').removeClass('disabled');
     }
 </script>
 {% endblock %}
