@@ -3,7 +3,7 @@
 # Set to True if no arduino is connected.  Random data will be generated.
 ARDUINO_SIMULATION = False
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
