@@ -2,14 +2,9 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from models import Batch, MashingTempLog
-from django.conf import settings
+
 
 def batchlisting(request):
-
-    if settings.ARDUINO_SIMULATION:
-        print "Simulate"
-    else:
-        print "Do it for real"
     batches = Batch.objects.all()
 
     return render_to_response('batchlisting.html', {'batches': batches}, context_instance=RequestContext(request))
