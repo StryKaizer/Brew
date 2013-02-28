@@ -35,6 +35,8 @@ void setup(void)
 
   // Start up the temperature sensor library for DS18B20 sensor
   sensors.begin(); // IC Default 9 bit. If you have troubles consider upping it 12. Ups the delay giving the IC more time to process the temperature measurement
+  
+//  delay(1000); // Something in program loop crashes sometimes, delay before start fixxes this (TODO: solve this another way later)
 }
 
 
@@ -52,7 +54,7 @@ void loop(void)
 //      break;
 //  }
   
-    if (serial_stream.available()) {
+  if (serial_stream.available()) {
     /* First, skip any accidental whitespace like newlines. */
     serial_stream.skip();
   }
@@ -66,14 +68,16 @@ void loop(void)
   
     
   // Handle outgoing data
-//  if (millis() - lastPrint > 1000) {  // Not sure if we need the 1sec delay
+if (millis() - lastPrint > 1000) {  // Not sure if we need the 1sec delay
     
     aJsonObject *msg = getOutputJSON();
     aJson.print(msg, &serial_stream);
     Serial.println(); /* Add newline. */
     aJson.deleteItem(msg);
     lastPrint = millis();
-//}
+}
+
+delay(1000);
   
 }
 

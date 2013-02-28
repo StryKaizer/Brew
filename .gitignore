@@ -5,3 +5,4 @@
 static/
 .idea/*
 ve/
+djangoproject/brew/local_settings.py

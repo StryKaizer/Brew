@@ -1,6 +1,9 @@
 # Django settings for brew project.
 
-DEBUG = True
+# Set to True if no arduino is connected.  Random data will be generated.
+ARDUINO_SIMULATION = False
+
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -169,3 +172,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages'
 )
+
+try:
+    from local_settings import *
+except:
+    pass
