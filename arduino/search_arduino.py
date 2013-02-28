@@ -1,4 +1,6 @@
 import serial
+from serial import tools.list_ports
+
 
 locations = [
     'COM0', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'COM10',
@@ -9,6 +11,7 @@ locations = [
     '/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyACM2',
     ]
 
+locations = list_ports.comports()
 for device in locations:
     try:
         arduino = serial.Serial(device, 9600)
