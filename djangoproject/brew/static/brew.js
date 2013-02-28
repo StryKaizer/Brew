@@ -27,10 +27,11 @@ var options = {
         },
         yAxis: {
           title: null,
-          max: 100,
-            min: 20,
+//          max: 100,
+//            min: 20,
 
           plotLines: [{
+
             value: 0,
             width: 3,
             color: '#EEEEEE'
@@ -41,7 +42,14 @@ var options = {
         },
         exporting: {
             enabled: false
-        },        
+        },
+    plotOptions: {
+        series: {
+            marker: {
+                enabled: false
+            }
+        }
+    },
         tooltip: {
           formatter: function() {
             return '<b>'+ this.series.name +'</b><br/>'+
