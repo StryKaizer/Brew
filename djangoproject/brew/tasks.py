@@ -32,6 +32,10 @@ def init_mashing(batch):
             sensor.requestTemperatures()
             temp = sensor.getTempC(addr)
 
+
+
+        
+
         MashingTempLog.objects.create(batch=batch, degrees=temp)
 
     set_variable('mashing_batch_id_active', "0")
