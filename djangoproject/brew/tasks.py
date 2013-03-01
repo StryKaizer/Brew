@@ -3,7 +3,7 @@ from brew.models import MashingTempLog
 from brew.helpers import get_variable, set_variable
 from time import sleep
 from nanpy import DallasTemperature
-from random import uniform
+from random import random
 from django.conf import settings
 
 @task()
@@ -20,8 +20,13 @@ def init_mashing(batch):
         sleep(2)  # Log om de 2 seconden
 
         if settings.ARDUINO_SIMULATION:
-            # Generate random temperature
-            temp = "%.2f" % uniform(15, 78)
+            try:
+                # Generate semi random temperature based on previous fake temp
+                previous = MashingTempLog.objects.latest('id')
+                temp = (random() / 20) + previous.degrees
+            except:
+                # Start dummy temp
+                temp = 20
         else:
             # Get data from Arduino
             sensor.requestTemperatures()
