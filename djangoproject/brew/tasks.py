@@ -23,7 +23,7 @@ def init_mashing(batch):
             try:
                 # Generate semi random temperature based on previous fake temp
                 previous = MashingTempLog.objects.latest('id')
-                temp = (random() / 20) + previous.degrees
+                temp = "%.2f" % ((random() / 20) + previous.degrees)
             except:
                 # Start dummy temp
                 temp = 20
@@ -34,7 +34,7 @@ def init_mashing(batch):
 
 
 
-        
+
 
         MashingTempLog.objects.create(batch=batch, degrees=temp)
 
