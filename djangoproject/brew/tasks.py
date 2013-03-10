@@ -12,8 +12,9 @@ ARDUINO_TEMPERATURE_PIN = 2
 
 @task()
 def init_mashing(batch):
-    set_variable('current_mashing_action', 'go_to_mashingstep')
-    set_variable('go_to_mashingstep_direction', 'tbd')
+    set_variable('current_mashing_action', 'approach_mashingstep') # TODO: remove this, is obsolete now as we keep state in logs
+    set_variable('approach_mashingstep_direction', 'tbd')
+    set_variable('mashing_batch_id_active', str(batch.id))
 
     # Initialize Arduino with Nanpy
     if not settings.ARDUINO_SIMULATION:
@@ -58,12 +59,11 @@ def process_measured_data(batch, measured_data):
     temp = float(measured_data['temp'])
 
     # current mashing action is heat/cool until next step is reached
-    if get_variable('current_mashing_action') == 'go_to_mashingstep':
+    if get_variable('current_mashing_action') == 'approach_mashingstep':
         switch_to_stay = False
 
         # Load active mashing step
         try:
-            # Try to get active mashing step from latest log
             active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
         except MashLog.DoesNotExist:
             active_mashing_step = batch.mashing_scheme.mashingstep_set.all()[0]
@@ -71,15 +71,15 @@ def process_measured_data(batch, measured_data):
         # Cast to float
         temp_to_reach = float(active_mashing_step.degrees)
 
-        # If direction is unknown (cool or heat), define direction (First time in each go_to_mashingstep phase)
-        if get_variable('go_to_mashingstep_direction') == 'tbd':
+        # If direction is unknown (cool or heat), define direction (First time in each approach mashingstep phase)
+        if get_variable('approach_mashingstep_direction') == 'tbd':
             if temp < temp_to_reach:
-                set_variable('go_to_mashingstep_direction', 'heat')
+                set_variable('approach_mashingstep_direction', 'heat')
             else:
-                set_variable('go_to_mashingstep_direction', 'cool')
+                set_variable('approach_mashingstep_direction', 'cool')
 
         # Healing logic
-        if get_variable('go_to_mashingstep_direction') == 'heat':
+        if get_variable('approach_mashingstep_direction') == 'heat':
             # Check if temperature is reached
             if temp >= temp_to_reach:
                 # Mashing step temperature reached
@@ -89,7 +89,7 @@ def process_measured_data(batch, measured_data):
                 actions['heat'] = True
 
         # Cooling logic
-        if get_variable('go_to_mashingstep_direction') == 'cool':
+        if get_variable('approach_mashingstep_direction') == 'cool':
             # Check if temperature is reached
             if temp <= temp_to_reach:
                 # Mashing step temperature reached
@@ -103,19 +103,31 @@ def process_measured_data(batch, measured_data):
             # Switch to stay at temperature
             set_variable('current_mashing_action', 'stay_at_mashingstep')
             # Reset direction
-            set_variable('go_to_mashingstep_direction', 'tbd')
+            set_variable('approach_mashingstep_direction', 'tbd')
             # Change status
             state = MASHSTEP_STATE_STAY
+
+    elif get_variable('current_mashing_action') == 'stay_at_mashingstep':
+
+        active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
+        state = MASHSTEP_STATE_STAY
 
     return {'state': state, 'active_mashing_step': active_mashing_step, 'actions': actions}
 
 
-# Return dummy temp for testing
+# Return dummy temp for testing based on heat/cool actions triggered
 def get_dummy_temperature(batch):
     try:
         # Generate semi random temperature based on previous fake temp
-        previous = MashLog.objects.filter(batch=batch).latest('id')
-        temp = "%.2f" % ((random() / 10) + previous.degrees)
+        previous_mash_log = MashLog.objects.filter(batch=batch).latest('id')
+
+        if previous_mash_log.heat:
+            # When previous log was heating, simulate steady temperature raising
+            temp = "%.2f" % (previous_mash_log.degrees + (random() / 10))
+        else:
+            # Nothing happening, simulate slow temperature lowering
+            temp = "%.2f" % (previous_mash_log.degrees - (random() / 50))
+
     except MashLog.DoesNotExist:
         # Start dummy temp
         temp = 20
