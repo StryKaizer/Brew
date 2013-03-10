@@ -14,7 +14,7 @@
                 <tr>
                     <th>Batch</th>
                   <th>Brewing Date</th>
-                  <th>Brew</th>
+                  <th>Mashing Scheme</th>
 
                   <th> </th>
                 </tr>
@@ -26,7 +26,7 @@
                 <tr>
                     <td>#{{ batch.number|stringformat:"03d" }}</td>
                   <td><a href="/brew/{{ batch.id }}/">{{ batch.brewing_date|date:"D j M Y" }}</a></td>
-                  <td>{{ batch.brew.name }}</td>
+                  <td>{{ batch.mashing_scheme.name }}</td>
 
                   <td class="nohref"><a href="#">Edit</a></td>
                 </tr>
