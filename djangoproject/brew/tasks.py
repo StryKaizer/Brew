@@ -126,7 +126,7 @@ def get_dummy_temperature(batch):
             temp = "%.2f" % (previous_mash_log.degrees + (random() / 10))
         else:
             # Nothing happening, simulate slow temperature lowering
-            temp = "%.2f" % (previous_mash_log.degrees - (random() / 50))
+            temp = "%.2f" % (previous_mash_log.degrees - (random() / 100))
 
     except MashLog.DoesNotExist:
         # Start dummy temp
