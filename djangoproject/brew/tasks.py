@@ -108,9 +108,12 @@ def process_measured_data(batch, measured_data):
             state = MASHSTEP_STATE_STAY
 
     elif get_variable('current_mashing_action') == 'stay_at_mashingstep':
-
         active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
         state = MASHSTEP_STATE_STAY
+
+        # TODO: Set actions if temperature goes out of bounds
+
+        # TODO: Switch to next mashing step or state finished when time spend in current active step is reached
 
     return {'state': state, 'active_mashing_step': active_mashing_step, 'actions': actions}
 
