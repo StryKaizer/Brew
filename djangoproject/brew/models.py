@@ -2,8 +2,7 @@ from django.db import models
 import time
 
 MASHINGSTEP_STATES = (
-    ('H', 'Heat'),
-    ('C', 'Cool'),
+    ('A', 'Approach'),
     ('S', 'Stay'),
     ('F', 'Finished'),
 )
@@ -44,6 +43,7 @@ class MashLog(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     active_mashing_step = models.ForeignKey(MashingStep)
     active_mashing_step_state = models.CharField(max_length=1, choices=MASHINGSTEP_STATES)
+    heat = models.BooleanField()
 
     def get_seconds_offset(self):
         first_log = MashLog.objects.filter(batch=self.batch)[:1].get()

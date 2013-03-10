@@ -5,8 +5,7 @@ from time import sleep
 from random import random
 from django.conf import settings
 
-MASHSTEP_STATE_HEAT = 'H'
-MASHSTEP_STATE_COOL = 'C'
+MASHSTEP_STATE_APPROACH = 'A'
 MASHSTEP_STATE_STAY = 'S'
 MASHSTEP_STATE_FINISHED = 'F'
 ARDUINO_TEMPERATURE_PIN = 2
@@ -31,19 +30,19 @@ def init_mashing(batch):
         if settings.ARDUINO_SIMULATION:
             measured_data['temp'] = get_dummy_temperature(batch)
         else:
-            # Get data from Arduino
             sensor.requestTemperatures()
             measured_data['temp'] = sensor.getTempC(addr)
 
         # Define actions depending on measured data
-        actions = get_mashing_actions(batch, measured_data)
+        processed = process_measured_data(batch, measured_data)
 
         # Log everything
         MashLog.objects.create(
             batch=batch,
-            degrees=temp,
-            active_mashing_step=actions['active_mashing_step'],
-            active_mashing_step_state=actions['state']
+            degrees=measured_data['temp'],
+            active_mashing_step=processed['active_mashing_step'],
+            active_mashing_step_state=processed['state'],
+            heat=processed['actions']['heat']
         )
 
     # End Mashing proces
@@ -51,11 +50,12 @@ def init_mashing(batch):
     return 'Mashing proces ended'
 
 
-# Returns a dictionary with actions and a boolean for each action whether they need to be active
-def get_mashing_actions(batch, measured_data):
-
-    temp = float(measured_data['temp'])
+# Return actions, active step and state dependong on measured data
+def process_measured_data(batch, measured_data):
+    actions = {'heat': False, 'cool': False}
     active_mashing_step = None
+    state = None
+    temp = float(measured_data['temp'])
 
     # current mashing action is heat/cool until next step is reached
     if get_variable('current_mashing_action') == 'go_to_mashingstep':
@@ -85,7 +85,8 @@ def get_mashing_actions(batch, measured_data):
                 # Mashing step temperature reached
                 switch_to_stay = True
             else:
-                state = MASHSTEP_STATE_HEAT
+                state = MASHSTEP_STATE_APPROACH
+                actions['heat'] = True
 
         # Cooling logic
         if get_variable('go_to_mashingstep_direction') == 'cool':
@@ -94,7 +95,8 @@ def get_mashing_actions(batch, measured_data):
                 # Mashing step temperature reached
                 switch_to_stay = True
             else:
-                state = MASHSTEP_STATE_COOL
+                state = MASHSTEP_STATE_APPROACH
+                actions['cool'] = True
 
         # Mashing step degrees reached logic
         if switch_to_stay:
@@ -105,7 +107,7 @@ def get_mashing_actions(batch, measured_data):
             # Change status
             state = MASHSTEP_STATE_STAY
 
-    return {'state': state, 'active_mashing_step': active_mashing_step}
+    return {'state': state, 'active_mashing_step': active_mashing_step, 'actions': actions}
 
 
 # Return dummy temp for testing
