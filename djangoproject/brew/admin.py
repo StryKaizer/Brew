@@ -1,4 +1,4 @@
-from brew.models import MashingScheme, MashingSchemeItem, Batch, MashingTempLog, Variable
+from brew.models import MashingScheme, MashingStep, Batch, MashLog, Variable
 from django.contrib import admin
 
 
@@ -7,9 +7,9 @@ from django.contrib import admin
 
 
 
-class MashingSchemeItemInline(admin.TabularInline):
-    verbose_name = 'Mashing Scheme Item'
-    model = MashingSchemeItem
+class MashingStepInline(admin.TabularInline):
+    verbose_name = 'Mashing Step'
+    model = MashingStep
     extra = 1
 
 
@@ -18,9 +18,9 @@ class MashingSchemeAdmin(admin.ModelAdmin):
         
         ('Basic brew info', {'fields': ['name']}),
     ]
-    inlines = [MashingSchemeItemInline]
+    inlines = [MashingStepInline]
 
 admin.site.register(MashingScheme, MashingSchemeAdmin)
 admin.site.register(Batch)
 admin.site.register(Variable)
-admin.site.register(MashingTempLog)
+admin.site.register(MashLog)

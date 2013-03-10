@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from models import Batch, MashingTempLog
+from models import Batch, MashLog
 from brew.helpers import get_variable
 
 
@@ -13,7 +13,7 @@ def batchlisting(request):
 
 def log(request, batch_id):
     batch = Batch.objects.get(id=batch_id)
-    logs = MashingTempLog.objects.filter(batch=batch)
+    logs = MashLog.objects.filter(batch=batch)
 
 
     if logs.count() > 0:

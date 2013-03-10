@@ -2,7 +2,7 @@ from django.utils import simplejson
 from dajaxice.decorators import dajaxice_register
 from brew.tasks import init_mashing
 from brew.helpers import set_variable
-from brew.models import Batch, MashingTempLog
+from brew.models import Batch, MashLog
 from django.utils.dateformat import format
 
 
@@ -24,9 +24,9 @@ def stop_mashing(request):
 def chart_update(request, batch_id, greaterthan_templog_id=None):
 
     if greaterthan_templog_id:
-        logs = MashingTempLog.objects.filter(batch__id=batch_id, id__gt=greaterthan_templog_id)
+        logs = MashLog.objects.filter(batch__id=batch_id, id__gt=greaterthan_templog_id)
     else:
-        logs = MashingTempLog.objects.filter(batch__id=batch_id)
+        logs = MashLog.objects.filter(batch__id=batch_id)
 
     if len(logs) > 0:
         latest_templog_id = logs.latest('id').id
@@ -50,5 +50,5 @@ def style_chart_data(mashing_temp_logs):
 @dajaxice_register
 def delete_mashing_data(request, batch_id):
 
-    MashingTempLog.objects.filter(batch__id=batch_id).delete()
+    MashLog.objects.filter(batch__id=batch_id).delete()
     return simplejson.dumps({'status': 200})

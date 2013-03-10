@@ -48,12 +48,11 @@
             </thead>
             <tbody>
 
-            {% for mashingstep in batch.brew.mashingschemeitem_set.all %}
+            {% for mashing_step in batch.mashing_scheme.mashingstep_set.all %}
             <tr class="row-success">
                 <td>{{ forloop.counter }}</td>
-                <td>{{ mashingstep.minutes }}</td>
-                <td>{{ mashingstep.degrees }}</td>
-
+                <td>{{ mashing_step.degrees }}</td>
+                <td>{{ mashing_step.minutes }}</td>
                 <td>Inactive</td>
             </tr>
             {% endfor %}

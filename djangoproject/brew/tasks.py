@@ -1,10 +1,14 @@
 from celery import task
-from brew.models import MashingTempLog
+from brew.models import MashLog
 from brew.helpers import get_variable, set_variable
 from time import sleep
-from nanpy import DallasTemperature
 from random import random
 from django.conf import settings
+
+MASHSTEP_STATE_HEAT = 'H'
+MASHSTEP_STATE_COOL = 'C'
+MASHSTEP_STATE_STAY = 'S'
+MASHSTEP_STATE_FINISHED = 'F'
 
 @task()
 def init_mashing(batch):
@@ -13,6 +17,7 @@ def init_mashing(batch):
 
     # Start up arduino connection
     if not settings.ARDUINO_SIMULATION:
+        from nanpy import DallasTemperature # Nanpy Initializes Arduino connection, thus using conditional import
         sensor = DallasTemperature(2)
         addr = sensor.getAddress(2)
 
@@ -22,9 +27,9 @@ def init_mashing(batch):
         if settings.ARDUINO_SIMULATION:
             try:
                 # Generate semi random temperature based on previous fake temp
-                previous = MashingTempLog.objects.filter(batch=batch).latest('id')
+                previous = MashLog.objects.filter(batch=batch).latest('id')
                 temp = "%.2f" % ((random() / 10) + previous.degrees)
-            except MashingTempLog.DoesNotExist:
+            except MashLog.DoesNotExist:
                 # Start dummy temp
                 temp = 20
         else:
@@ -32,10 +37,14 @@ def init_mashing(batch):
             sensor.requestTemperatures()
             temp = sensor.getTempC(addr)
 
-        result = get_mashing_actions(batch, temp)
-        print result #TODO: actually use this ;)
+        actions = get_mashing_actions(batch, temp)
 
-        MashingTempLog.objects.create(batch=batch, degrees=temp)
+        MashLog.objects.create(
+            batch=batch,
+            degrees=temp,
+            active_mashing_step=actions['active_mashing_step'],
+            active_mashing_step_state=actions['state']
+        )
 
     set_variable('mashing_batch_id_active', "0")
     return 'Mashing proces ended'
@@ -45,17 +54,21 @@ def init_mashing(batch):
 def get_mashing_actions(batch, temp):
 
     temp = float(temp)
+    active_mashing_step = None
 
     # current mashing action is heat/cool until next step is reached
     if get_variable('current_mashing_action') == 'go_to_mashingstep':
         switch_to_stay = False
 
-        # Load step which we are trying to reach
-        mashingschemeitems_finished = MashingTempLog.objects.filter(batch=batch).exclude(mashingschemeitem_started=None).count()
-        mashingschemeitem = batch.mashing_scheme.mashingschemeitem_set.all()[mashingschemeitems_finished]
+        # Load active mashing step
+        try:
+            # Try to get active mashing step from latest log
+            active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
+        except MashLog.DoesNotExist:
+            active_mashing_step = batch.mashing_scheme.mashingstep_set.all()[0]
 
         # Cast to float
-        temp_to_reach = float(mashingschemeitem.degrees)
+        temp_to_reach = float(active_mashing_step.degrees)
 
         # If direction is unknown (cool or heat), define direction (First time in each go_to_mashingstep phase)
         if get_variable('go_to_mashingstep_direction') == 'tbd':
@@ -68,27 +81,28 @@ def get_mashing_actions(batch, temp):
         if get_variable('go_to_mashingstep_direction') == 'heat':
             # Check if temperature is reached
             if temp >= temp_to_reach:
-                # Mashingschemeitem temperature reached
+                # Mashing step temperature reached
                 switch_to_stay = True
             else:
-                return {'heat': True, 'cool': False}
+                state = MASHSTEP_STATE_HEAT
 
         # Cooling logic
         if get_variable('go_to_mashingstep_direction') == 'cool':
             # Check if temperature is reached
             if temp <= temp_to_reach:
-                # Mashingschemeitem temperature reached
+                # Mashing step temperature reached
                 switch_to_stay = True
             else:
-                return {'heat': False, 'cool': True}
+                state = MASHSTEP_STATE_COOL
 
-        # mashingschemeitem degrees reached logic
+        # Mashing step degrees reached logic
         if switch_to_stay:
             # Switch to stay at temperature
             set_variable('current_mashing_action', 'stay_at_mashingstep')
             # Reset direction
             set_variable('go_to_mashingstep_direction', 'tbd')
-            # set heat and cooling to false, and notify mashingschemeitem start
-            return {'heat': False, 'cool': False, 'mashingschemeitem_started': mashingschemeitem}
+            # Change status
+            state = MASHSTEP_STATE_STAY
 
-    return False
+    return {'state': state, 'active_mashing_step': active_mashing_step}
+
