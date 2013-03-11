@@ -5,7 +5,15 @@ from django.contrib import admin
 
 
 
-
+class MashLogAdmin(admin.ModelAdmin):
+    list_display  = (
+        'created',
+        'batch',
+        'degrees',
+        'active_mashing_step',
+        'active_mashing_step_state',
+        'heat'
+    )
 
 class MashingStepInline(admin.TabularInline):
     verbose_name = 'Mashing Step'
@@ -23,4 +31,4 @@ class MashingSchemeAdmin(admin.ModelAdmin):
 admin.site.register(MashingScheme, MashingSchemeAdmin)
 admin.site.register(Batch)
 admin.site.register(Variable)
-admin.site.register(MashLog)
+admin.site.register(MashLog, MashLogAdmin)

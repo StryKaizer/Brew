@@ -3,12 +3,17 @@ from brew.models import MashLog
 from brew.helpers import get_variable, set_variable
 from time import sleep
 from random import random
+from datetime import datetime
 from django.conf import settings
+import pytz
 
 MASHSTEP_STATE_APPROACH = 'A'
 MASHSTEP_STATE_STAY = 'S'
 MASHSTEP_STATE_FINISHED = 'F'
 ARDUINO_TEMPERATURE_PIN = 2
+MAXIMUM_DEVIATION = 0.3  # Maximum allowed deviation in temperature before heat/cooling is triggered
+DELAY_BETWEEN_MEASUREMENTS = 2  # Seconds between each measurement
+DELAY_BETWEEN_ACTION_SWITCH = 30  # To prevent fast switching between heat, passive and/or cooling, add build in delay
 
 @task()
 def init_mashing(batch):
@@ -24,7 +29,7 @@ def init_mashing(batch):
 
     # Run Mashing proces
     while get_variable('mashing_active', 'FALSE') == 'TRUE':
-        sleep(2)  # Log om de 2 seconden
+        sleep(DELAY_BETWEEN_MEASUREMENTS)
 
         # Measure data
         measured_data = {}
@@ -109,11 +114,40 @@ def process_measured_data(batch, measured_data):
 
     elif get_variable('current_mashing_action') == 'stay_at_mashingstep':
         active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
-        state = MASHSTEP_STATE_STAY
 
-        # TODO: Set actions if temperature goes out of bounds
+        # Check if total time to spend in active mashing step is reached
+        seconds_to_stay = int(active_mashing_step.minutes) * 60
+        first_log_for_current_mashing_step = MashLog.objects.filter(batch=batch, active_mashing_step=active_mashing_step, active_mashing_step_state='S')[0]
+        now = datetime.now(pytz.utc)
+        difference = now - first_log_for_current_mashing_step.created
+        if difference.total_seconds() >= seconds_to_stay:
+            # Total time to spend in active mashing step reached
+            # If active mashing step is latest, set status to finished
+            active_mashing_step_index = batch.mashing_scheme.mashingstep_set.filter(id__lt=active_mashing_step.id).count()
+            try:
+                # Activate next mashing step if available
+                active_mashing_step = batch.mashing_scheme.mashingstep_set.all()[active_mashing_step_index + 1]
+                state = MASHSTEP_STATE_APPROACH
+                set_variable('current_mashing_action', 'approach_mashingstep')
+            except:
+                # Set state to finished
+                state = MASHSTEP_STATE_FINISHED
+                set_variable('current_mashing_action', 'finished')
 
-        # TODO: Switch to next mashing step or state finished when time spend in current active step is reached
+        else:
+            # Total time spend not reached, check if actions are required to ensure current temperature
+            temp_to_stay = float(active_mashing_step.degrees)
+            state = MASHSTEP_STATE_STAY
+
+            # TODO: Set actions if temperature goes out of bounds
+            # if temp < (temp_to_stay - MAXIMUM_DEVIATION) and
+    elif get_variable('current_mashing_action') == 'finished':
+        state = MASHSTEP_STATE_FINISHED
+        active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
+        set_variable('mashing_active', 'FALSE')
+
+
+
 
     return {'state': state, 'active_mashing_step': active_mashing_step, 'actions': actions}
 
@@ -126,10 +160,10 @@ def get_dummy_temperature(batch):
 
         if previous_mash_log.heat:
             # When previous log was heating, simulate steady temperature raising
-            temp = "%.2f" % (previous_mash_log.degrees + (random() / 10))
+            temp = "%.2f" % (previous_mash_log.degrees + (random() / 15))
         else:
             # Nothing happening, simulate slow temperature lowering
-            temp = "%.2f" % (previous_mash_log.degrees - (random() / 100))
+            temp = "%.2f" % (previous_mash_log.degrees - (random() / 200))
 
     except MashLog.DoesNotExist:
         # Start dummy temp

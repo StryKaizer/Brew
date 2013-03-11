@@ -33,7 +33,7 @@ class Batch(models.Model):
     brewing_date = models.DateTimeField('Brewing date')
 
     def __unicode__(self):
-        return str(self.brewing_date) + ' ' + str(self.number)
+        return str(self.number)
 
 
 # The model MashLog is used to hold data of 1 measure for a certain Batch.
@@ -50,7 +50,7 @@ class MashLog(models.Model):
         return int(time.mktime(self.created.timetuple()) - time.mktime(first_log.created.timetuple()))
 
     def __unicode__(self):
-        return str(self.id) + ' - ' + str(self.created)
+        return str(self.id) + ' - ' + str(self.created) +' ' +  str(self.active_mashing_step) + ' ' + str(self.active_mashing_step_state)
 
 
 # The model Variable is used for a simple key-value store functionality.
