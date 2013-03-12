@@ -14,6 +14,7 @@ django==1.4.1
 django-celery==3.0.4
 django-extensions==1.0.2
 django-dajaxice==0.5.3
+django-grappelli==2.4.4
 gunicorn==0.17.2
 nanpy
 pyserial==2.6

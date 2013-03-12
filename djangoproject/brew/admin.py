@@ -18,6 +18,7 @@ class MashLogAdmin(admin.ModelAdmin):
 class MashingStepInline(admin.TabularInline):
     verbose_name = 'Mashing Step'
     model = MashingStep
+    sortable_field_name = "position"
     extra = 1
 
 

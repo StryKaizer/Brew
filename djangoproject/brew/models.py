@@ -18,9 +18,13 @@ class MashingScheme(models.Model):
 
 # The model MashingStep is used to hold data for one step in a MashingScheme.
 class MashingStep(models.Model):
+    position = models.PositiveSmallIntegerField("Position")
     mashing_scheme = models.ForeignKey(MashingScheme)
     minutes = models.CharField(max_length=3)
     degrees = models.CharField(max_length=3)
+
+    class Meta:
+        ordering = ['position']
 
     def __unicode__(self):
         return str(self.minutes) + ' min -  ' + str(self.degrees) + ' degrees'
