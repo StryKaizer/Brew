@@ -2,7 +2,7 @@
 *.pot
 *.pyc
 .vagrant
-static/
+/static/*
 .idea/*
-ve/
+/ve/*
 djangoproject/brew/local_settings.py

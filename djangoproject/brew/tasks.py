@@ -138,6 +138,7 @@ def process_measured_data(batch, measured_data):
             except:
                 # Set state to finished
                 state = MASHSTEP_STATE_FINISHED
+                chart_icon = 'finished'
                 set_variable('current_mashing_action', 'finished')
 
         else:
