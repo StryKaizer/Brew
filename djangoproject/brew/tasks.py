@@ -48,7 +48,8 @@ def init_mashing(batch):
             degrees=measured_data['temp'],
             active_mashing_step=processed['active_mashing_step'],
             active_mashing_step_state=processed['state'],
-            heat=processed['actions']['heat']
+            heat=processed['actions']['heat'],
+            chart_icon=processed['chart_icon']
         )
 
     # End Mashing proces
@@ -60,6 +61,7 @@ def init_mashing(batch):
 def process_measured_data(batch, measured_data):
     actions = {'heat': False, 'cool': False}
     active_mashing_step = None
+    chart_icon = None
     state = None
     temp = float(measured_data['temp'])
 
@@ -111,6 +113,9 @@ def process_measured_data(batch, measured_data):
             set_variable('approach_mashingstep_direction', 'tbd')
             # Change status
             state = MASHSTEP_STATE_STAY
+            # Set chart icon in log
+            active_mashing_step_index = batch.mashing_scheme.mashingstep_set.filter(id__lt=active_mashing_step.id).count()
+            chart_icon = 'start' + str((active_mashing_step_index + 1))
 
     elif get_variable('current_mashing_action') == 'stay_at_mashingstep':
         active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
@@ -129,6 +134,7 @@ def process_measured_data(batch, measured_data):
                 active_mashing_step = batch.mashing_scheme.mashingstep_set.all()[active_mashing_step_index + 1]
                 state = MASHSTEP_STATE_APPROACH
                 set_variable('current_mashing_action', 'approach_mashingstep')
+                chart_icon = 'stop' + str((active_mashing_step_index + 1))
             except:
                 # Set state to finished
                 state = MASHSTEP_STATE_FINISHED
@@ -145,7 +151,7 @@ def process_measured_data(batch, measured_data):
         state = MASHSTEP_STATE_FINISHED
         active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
 
-    return {'state': state, 'active_mashing_step': active_mashing_step, 'actions': actions}
+    return {'state': state, 'active_mashing_step': active_mashing_step, 'actions': actions, 'chart_icon': chart_icon}
 
 
 # Return dummy temp for testing based on heat/cool actions triggered
@@ -156,7 +162,7 @@ def get_dummy_temperature(batch):
 
         if previous_mash_log.heat:
             # When previous log was heating, simulate steady temperature raising
-            temp = "%.2f" % (previous_mash_log.degrees + (random() / 15))
+            temp = "%.2f" % (previous_mash_log.degrees + (random() / 10))
         else:
             # Nothing happening, simulate slow temperature lowering
             temp = "%.2f" % (previous_mash_log.degrees - (random() / 150))

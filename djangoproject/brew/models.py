@@ -7,6 +7,20 @@ MASHINGSTEP_STATES = (
     ('F', 'Finished'),
 )
 
+CHART_ICONS = (
+    ('start1', 'Start Step 1'), ('stop1', 'Finished Step 1'),
+    ('start2', 'Start Step 2'), ('stop2', 'Finished Step 2'),
+    ('start3', 'Start Step 3'), ('stop3', 'Finished Step 3'),
+    ('start4', 'Start Step 4'), ('stop4', 'Finished Step 4'),
+    ('start5', 'Start Step 5'), ('stop5', 'Finished Step 5'),
+    ('start6', 'Start Step 6'), ('stop6', 'Finished Step 6'),
+    ('start7', 'Start Step 7'), ('stop7', 'Finished Step 7'),
+    ('start8', 'Start Step 8'), ('stop8', 'Finished Step 8'),
+    ('start9', 'Start Step 9'), ('stop9', 'Finished Step 9'),
+    ('start10', 'Start Step 10'), ('stop10', 'Finished Step 10'),
+    ('finished', 'Finished'),
+)
+
 
 # The model MashingScheme
 class MashingScheme(models.Model):
@@ -47,6 +61,7 @@ class MashLog(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     active_mashing_step = models.ForeignKey(MashingStep)
     active_mashing_step_state = models.CharField(max_length=1, choices=MASHINGSTEP_STATES)
+    chart_icon = models.CharField(max_length=30, choices=CHART_ICONS, blank=True, null=True)
     heat = models.BooleanField()
 
     def get_seconds_offset(self):

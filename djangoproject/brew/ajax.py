@@ -21,19 +21,37 @@ def stop_mashing(request):
     return simplejson.dumps({'status': 200})
 
 @dajaxice_register
-def chart_update(request, batch_id, greaterthan_templog_id=None):
+def chart_update(request, batch_id, greaterthan_mashlog_id=None):
 
-    if greaterthan_templog_id:
-        logs = MashLog.objects.filter(batch__id=batch_id, id__gt=greaterthan_templog_id)
+    if greaterthan_mashlog_id:
+        logs = MashLog.objects.filter(batch__id=batch_id, id__gt=greaterthan_mashlog_id)
     else:
         logs = MashLog.objects.filter(batch__id=batch_id)
 
     if len(logs) > 0:
-        latest_templog_id = logs.latest('id').id
+        last_mashlog = logs.latest('id')
+        last_mashlog_id = last_mashlog.id
+        # Load active mashing step
+        try:
+            active_mashing_step = MashLog.objects.filter(batch__id=batch_id).latest('id').active_mashing_step
+        except MashLog.DoesNotExist:
+            batch = Batch.objects.get(id=batch_id)
+            active_mashing_step = batch.mashing_scheme.mashingstep_set.all()[0]
+        active_mashing_step_index = last_mashlog.batch.mashing_scheme.mashingstep_set.filter(position__lt=active_mashing_step.position).count()
+        active_mashing_step_state = last_mashlog.active_mashing_step_state
     else:
-        latest_templog_id = None
+        last_mashlog_id = None
+        active_mashing_step_index = 0
+        active_mashing_step_state = 'A'
 
-    data = {'chart': style_chart_data(logs), 'latest_templog_id': latest_templog_id}
+
+
+    data = {
+        'chart': style_chart_data(logs),
+        'latest_templog_id': last_mashlog_id,
+        'active_mashing_step_index': active_mashing_step_index,
+        'active_mashing_step_state': active_mashing_step_state
+    }
     return simplejson.dumps({'status': 200, 'data': data})
 
 
@@ -43,9 +61,10 @@ def style_chart_data(mashing_temp_logs):
         log = {
             'seconds': mashing_temp_log.get_seconds_offset(),
             'degrees': mashing_temp_log.degrees,
-            'state': mashing_temp_log.active_mashing_step_state,
+            'icon': mashing_temp_log.chart_icon,
+            # 'state': mashing_temp_log.active_mashing_step_state,
             'heat': mashing_temp_log.heat,
-            'step': mashing_temp_log.active_mashing_step.id
+            # 'step': mashing_temp_log.active_mashing_step.id
         }
         result.append(log)
     return result

@@ -43,7 +43,7 @@ var options = {
     plotOptions: {
         series: {
             marker: {
-                enabled: false
+                enabled: true
             }
         }
     },
@@ -123,9 +123,18 @@ function callback_chart_update_all(response){
 
     options.series[0].data = []
     for(item in response.data.chart){
-        iso8601date = response.data.chart[item].seconds;
-        // options.series[0].data.push([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
-        options.series[0].data.push([iso8601date * 1000, parseFloat(response.data.chart[item].degrees)]);
+
+        // Handle markers
+        if(response.data.chart[item].icon != null){
+            marker_settings = {enabled: true, symbol: 'url(/static/icons/' + response.data.chart[item].icon + '.png)'}
+        }else{
+            marker_settings = {enabled: false}
+        }
+        options.series[0].data.push({
+            y: parseFloat(response.data.chart[item].degrees),
+            x: response.data.chart[item].seconds * 1000,
+            marker: marker_settings
+        });
     }
 
     chart = new Highcharts.Chart(options);
@@ -133,16 +142,31 @@ function callback_chart_update_all(response){
 
 // Load latest data in graph
 function chart_update_latest(){
-    Dajaxice.brew.chart_update(callback_chart_update_latest, {'batch_id' : Brew.batch_id, 'greaterthan_templog_id' : Brew.latest_templog_id});
+    Dajaxice.brew.chart_update(callback_chart_update_latest, {'batch_id' : Brew.batch_id, 'greaterthan_mashlog_id' : Brew.latest_templog_id});
 }
 function callback_chart_update_latest(response){
     check_response(response);
     Brew.latest_templog_id = response.data.latest_templog_id;
     options.series[0].data = []
     for(item in response.data.chart){
-        iso8601date = response.data.chart[item].seconds;
+//        iso8601date = response.data.chart[item].seconds;
         // chart.series[0].addPoint([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
-        chart.series[0].addPoint([iso8601date * 1000, parseFloat(response.data.chart[item].degrees)]);
+
+        // Handle markers
+        if(response.data.chart[item].icon != null){
+            marker_settings = {enabled: true, symbol: 'url(/static/icons/' + response.data.chart[item].icon + '.png)'}
+        }else{
+            marker_settings = {enabled: false}
+        }
+        point = {
+            y: parseFloat(response.data.chart[item].degrees),
+            x: response.data.chart[item].seconds * 1000,
+            marker: marker_settings
+        };
+
+
+
+        chart.series[0].addPoint(point);
 
         // Update temperature label
         $('#temperature').text(response.data.chart[item].degrees + '°');

@@ -9,3 +9,7 @@
 .heating {
     display: none;
 }
+
+.rowlink {
+    cursor: pointer;
+}
