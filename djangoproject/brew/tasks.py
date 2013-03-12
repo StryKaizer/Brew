@@ -144,10 +144,6 @@ def process_measured_data(batch, measured_data):
     elif get_variable('current_mashing_action') == 'finished':
         state = MASHSTEP_STATE_FINISHED
         active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
-        set_variable('mashing_active', 'FALSE')
-
-
-
 
     return {'state': state, 'active_mashing_step': active_mashing_step, 'actions': actions}
 
@@ -163,7 +159,7 @@ def get_dummy_temperature(batch):
             temp = "%.2f" % (previous_mash_log.degrees + (random() / 15))
         else:
             # Nothing happening, simulate slow temperature lowering
-            temp = "%.2f" % (previous_mash_log.degrees - (random() / 200))
+            temp = "%.2f" % (previous_mash_log.degrees - (random() / 150))
 
     except MashLog.DoesNotExist:
         # Start dummy temp

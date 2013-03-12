@@ -47,6 +47,9 @@ var options = {
             }
         }
     },
+    scrollbar: {
+        enabled: true
+    },
     tooltip: {
         formatter: function() {
             return '<b>'+ this.series.name +'</b><br/>'+
@@ -113,16 +116,16 @@ function check_response(data){
 function chart_update_all(){
     Dajaxice.brew.chart_update(callback_chart_update_all, {'batch_id' : Brew.batch_id});
 }
-function callback_chart_update_all(data){
-    check_response(data);
+function callback_chart_update_all(response){
+    check_response(response);
 
-    Brew.latest_templog_id = data.data.latest_templog_id;
+    Brew.latest_templog_id = response.data.latest_templog_id;
 
     options.series[0].data = []
-    for(item in data.data.chart){
-        iso8601date = data.data.chart[item][0];
+    for(item in response.data.chart){
+        iso8601date = response.data.chart[item].seconds;
         // options.series[0].data.push([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
-        options.series[0].data.push([iso8601date * 1000, parseFloat(data.data.chart[item][1])]);
+        options.series[0].data.push([iso8601date * 1000, parseFloat(response.data.chart[item].degrees)]);
     }
 
     chart = new Highcharts.Chart(options);
@@ -132,18 +135,26 @@ function callback_chart_update_all(data){
 function chart_update_latest(){
     Dajaxice.brew.chart_update(callback_chart_update_latest, {'batch_id' : Brew.batch_id, 'greaterthan_templog_id' : Brew.latest_templog_id});
 }
-function callback_chart_update_latest(data){
-    check_response(data);
-    Brew.latest_templog_id = data.data.latest_templog_id;
+function callback_chart_update_latest(response){
+    check_response(response);
+    Brew.latest_templog_id = response.data.latest_templog_id;
     options.series[0].data = []
-    for(item in data.data.chart){
-        iso8601date = data.data.chart[item][0];
+    for(item in response.data.chart){
+        iso8601date = response.data.chart[item].seconds;
         // chart.series[0].addPoint([Date.parse(iso8601date), parseFloat(data.data.chart[item][1])]);
-        chart.series[0].addPoint([iso8601date * 1000, parseFloat(data.data.chart[item][1])]);
-        $('#temperature').text(data.data.chart[item][1] + '°');
+        chart.series[0].addPoint([iso8601date * 1000, parseFloat(response.data.chart[item].degrees)]);
+
+        // Update temperature label
+        $('#temperature').text(response.data.chart[item].degrees + '°');
+
+        // Update heating label
+        if(response.data.chart[item].heat){
+            $('.heating').fadeIn();
+        }else{
+            $('.heating').fadeOut();
+        }
+
     }
-
-
 }
 
 

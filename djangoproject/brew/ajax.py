@@ -33,8 +33,6 @@ def chart_update(request, batch_id, greaterthan_templog_id=None):
     else:
         latest_templog_id = None
 
-
-
     data = {'chart': style_chart_data(logs), 'latest_templog_id': latest_templog_id}
     return simplejson.dumps({'status': 200, 'data': data})
 
@@ -42,7 +40,13 @@ def chart_update(request, batch_id, greaterthan_templog_id=None):
 def style_chart_data(mashing_temp_logs):
     result = []
     for mashing_temp_log in mashing_temp_logs:
-        log = [mashing_temp_log.get_seconds_offset(), mashing_temp_log.degrees]
+        log = {
+            'seconds': mashing_temp_log.get_seconds_offset(),
+            'degrees': mashing_temp_log.degrees,
+            'state': mashing_temp_log.active_mashing_step_state,
+            'heat': mashing_temp_log.heat,
+            'step': mashing_temp_log.active_mashing_step.id
+        }
         result.append(log)
     return result
 
