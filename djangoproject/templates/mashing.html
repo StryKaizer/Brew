@@ -37,7 +37,7 @@
         <h1></h1>
 
 
-        <table class="table table-bordered table-striped">
+        <table class="table table-striped">
             <thead>
             <tr>
                 <th>#</th>
@@ -46,14 +46,14 @@
                 <th>Status</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="mashingoverview">
 
             {% for mashing_step in batch.mashing_scheme.mashingstep_set.all %}
-            <tr class="row-success">
+            <tr class="">
                 <td>{{ forloop.counter }}</td>
                 <td>{{ mashing_step.degrees }}</td>
                 <td>{{ mashing_step.minutes }}</td>
-                <td>Inactive</td>
+                <td class="status">Inactive</td>
             </tr>
             {% endfor %}
 

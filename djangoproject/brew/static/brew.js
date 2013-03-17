@@ -146,7 +146,10 @@ function chart_update_latest(){
 }
 function callback_chart_update_latest(response){
     check_response(response);
-    Brew.latest_templog_id = response.data.latest_templog_id;
+    if (response.data.latest_templog_id != null){
+        Brew.latest_templog_id = response.data.latest_templog_id;
+    }
+
     options.series[0].data = []
     for(item in response.data.chart){
 //        iso8601date = response.data.chart[item].seconds;
@@ -178,6 +181,22 @@ function callback_chart_update_latest(response){
             $('.heating').fadeOut();
         }
 
+
+        // Update Mash Table
+        index = response.data.active_mashing_step_index;
+        state = response.data.active_mashing_step_state;
+        $('#mashingoverview tr:lt(' + index + ')').removeClass('info').addClass('success').find('.status').text('Finished');
+        switch (state){
+            case 'F':
+                $('#mashingoverview tr:eq(' + index + ')').addClass('success').find('.status').text('Finished');
+                break;
+            case 'A':
+                $('#mashingoverview tr:eq(' + index + ')').addClass('info').find('.status').text('Approaching...');
+                break;
+            case 'S':
+                $('#mashingoverview tr:eq(' + index + ')').addClass('info').find('.status').text('Running');
+                break;
+        }
     }
 }
 
