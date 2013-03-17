@@ -219,7 +219,7 @@ function run_mashing(){
 
     countdown_for_update = countdown_for_update - 1;
     if(countdown_for_update < 1){
-        countdown_for_update = 25;
+        countdown_for_update = 10;
         chart_update_latest();
     }
 

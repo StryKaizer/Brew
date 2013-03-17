@@ -1,11 +1,7 @@
 from django.db import models
 import time
-
-MASHINGSTEP_STATES = (
-    ('A', 'Approach'),
-    ('S', 'Stay'),
-    ('F', 'Finished'),
-)
+from datetime import datetime
+import pytz
 
 CHART_ICONS = (
     ('start1', 'Start Step 1'), ('stop1', 'Finished Step 1'),
@@ -21,6 +17,17 @@ CHART_ICONS = (
     ('finished', 'Finished'),
 )
 
+MASHINGSTEP_STATES = (
+    ('approach', 'Approach'),
+    ('stay', 'Stay'),
+    ('finished', 'Finished'),
+)
+
+MASHINGSTEP_APPROACH_DIRECTIONS = (
+    ('tbd', 'To be defined'),
+    ('heat', 'Heat'),
+    ('cool', 'Cool'),
+)
 
 # The model MashingScheme
 class MashingScheme(models.Model):
@@ -50,8 +57,26 @@ class Batch(models.Model):
     number = models.IntegerField(max_length=3)
     brewing_date = models.DateTimeField('Brewing date')
 
+    # Data storage for mashing proces
+    mashing_process_is_running = models.BooleanField()
+    active_mashingstep = models.ForeignKey(MashingStep)
+    active_mashingstep_state = models.CharField(max_length=10, choices=MASHINGSTEP_STATES, default='approach')
+    active_mashingstep_state_start = models.DateTimeField()
+    active_mashingstep_approach_direction = models.CharField(max_length=10, choices=MASHINGSTEP_APPROACH_DIRECTIONS, default='tbd')
+    heat = models.BooleanField()
+    cool = models.BooleanField()
+
     def __unicode__(self):
         return str(self.number)
+
+    def save(self, *args, **kw):
+        if self.pk is not None:
+            orig = Batch.objects.get(pk=self.pk)
+
+            # If state changes, update active_mashingstep_state_start to current timestamp
+            if orig.active_mashingstep_state != self.active_mashingstep_state:
+                self.active_mashingstep_state_start = datetime.now(pytz.utc)
+        super(Batch, self).save(*args, **kw)
 
 
 # The model MashLog is used to hold data of 1 measure for a certain Batch.
@@ -60,7 +85,7 @@ class MashLog(models.Model):
     degrees = models.FloatField()
     created = models.DateTimeField(auto_now_add=True)
     active_mashing_step = models.ForeignKey(MashingStep)
-    active_mashing_step_state = models.CharField(max_length=1, choices=MASHINGSTEP_STATES)
+    active_mashing_step_state = models.CharField(max_length=10, choices=MASHINGSTEP_STATES)
     chart_icon = models.CharField(max_length=30, choices=CHART_ICONS, blank=True, null=True)
     heat = models.BooleanField()
 

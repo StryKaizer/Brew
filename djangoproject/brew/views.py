@@ -27,14 +27,9 @@ def log(request, batch_id):
         is_started = False
         seconds_running = None
 
-    if get_variable('mashing_batch_id_active', '0') == str(batch.id):
-        is_running = True
-    else:
-        is_running = False
-
     return render_to_response('mashing.html',{
         'batch' : batch,
         'is_started': is_started,
-        'is_running': is_running,
+        'is_running': batch.mashing_process_is_running,
         'seconds_running': seconds_running
     }, context_instance=RequestContext(request))

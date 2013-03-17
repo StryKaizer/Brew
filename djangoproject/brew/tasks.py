@@ -1,5 +1,5 @@
 from celery import task
-from brew.models import MashLog
+from brew.models import MashLog, Batch
 from brew.helpers import get_variable, set_variable
 from time import sleep
 from random import random
@@ -7,9 +7,9 @@ from datetime import datetime
 from django.conf import settings
 import pytz
 
-MASHSTEP_STATE_APPROACH = 'A'
-MASHSTEP_STATE_STAY = 'S'
-MASHSTEP_STATE_FINISHED = 'F'
+MASHSTEP_STATE_APPROACH = 'approach'
+MASHSTEP_STATE_STAY = 'stay'
+MASHSTEP_STATE_FINISHED = 'finished'
 ARDUINO_TEMPERATURE_PIN = 2
 MAXIMUM_DEVIATION = 0.3  # Maximum allowed deviation in temperature before heat/cooling is triggered
 DELAY_BETWEEN_MEASUREMENTS = 2  # Seconds between each measurement
@@ -17,9 +17,14 @@ DELAY_BETWEEN_ACTION_SWITCH = 30  # To prevent fast switching between heat, pass
 
 @task()
 def init_mashing(batch):
-    set_variable('current_mashing_action', 'approach_mashingstep') # TODO: remove this, is obsolete now as we keep state in logs
-    set_variable('approach_mashingstep_direction', 'tbd')
-    set_variable('mashing_batch_id_active', str(batch.id))
+    # Set defaults for batch on start
+    batch.active_mashingstep = batch.mashing_scheme.mashingstep_set.all().order_by('position')[0]
+    batch.active_mashingstep_state = MASHSTEP_STATE_APPROACH
+    batch.active_mashingstep_state_start = datetime.now(pytz.utc)
+    batch.active_mashingstep_approach_direction = 'tbd'
+    batch.heat = False
+    batch.cool = False
+    batch.save()
 
     # Initialize Arduino with Nanpy
     if not settings.ARDUINO_SIMULATION:
@@ -28,8 +33,9 @@ def init_mashing(batch):
         addr = sensor.getAddress(ARDUINO_TEMPERATURE_PIN)
 
     # Run Mashing proces
-    while get_variable('mashing_active', 'FALSE') == 'TRUE':
+    while batch.mashing_process_is_running:
         sleep(DELAY_BETWEEN_MEASUREMENTS)
+        print 'running'
 
         # Measure data
         measured_data = {}
@@ -40,119 +46,90 @@ def init_mashing(batch):
             measured_data['temp'] = sensor.getTempC(addr)
 
         # Define actions depending on measured data
-        processed = process_measured_data(batch, measured_data)
+        batch = process_measured_data(batch.id, measured_data)
 
-        # Log everything
+        # Optionally, Log everything
         MashLog.objects.create(
             batch=batch,
             degrees=measured_data['temp'],
-            active_mashing_step=processed['active_mashing_step'],
-            active_mashing_step_state=processed['state'],
-            heat=processed['actions']['heat'],
-            chart_icon=processed['chart_icon']
+            active_mashing_step=batch.active_mashingstep,
+            active_mashing_step_state=batch.active_mashingstep_state,
+            heat=batch.heat,
+            chart_icon=None
         )
 
-    # End Mashing proces
-    set_variable('mashing_batch_id_active', "0")
     return 'Mashing proces ended'
 
 
-# Return actions, active step and state dependong on measured data
-def process_measured_data(batch, measured_data):
-    actions = {'heat': False, 'cool': False}
-    active_mashing_step = None
-    chart_icon = None
-    state = None
+# Update batch data according to measured data
+def process_measured_data(batch_id, measured_data):
+    # Ensure up to date batch
+    batch = Batch.objects.get(id=batch_id)
+
     temp = float(measured_data['temp'])
 
     # current mashing action is heat/cool until next step is reached
-    if get_variable('current_mashing_action') == 'approach_mashingstep':
+    if batch.active_mashingstep_state == MASHSTEP_STATE_APPROACH:
         switch_to_stay = False
 
-        # Load active mashing step
-        try:
-            active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
-        except MashLog.DoesNotExist:
-            active_mashing_step = batch.mashing_scheme.mashingstep_set.all()[0]
-
         # Cast to float
-        temp_to_reach = float(active_mashing_step.degrees)
+        target_temperature = float(batch.active_mashingstep.degrees)
 
-        # If direction is unknown (cool or heat), define direction (First time in each approach mashingstep phase)
-        if get_variable('approach_mashingstep_direction') == 'tbd':
-            if temp < temp_to_reach:
-                set_variable('approach_mashingstep_direction', 'heat')
+        # Define direction if undefined and start appropriate action
+        if batch.active_mashingstep_approach_direction == 'tbd':
+            if temp < target_temperature:
+               batch.active_mashingstep_approach_direction = 'heat' 
+               batch.heat = True
             else:
-                set_variable('approach_mashingstep_direction', 'cool')
+                batch.active_mashingstep_approach_direction = 'cool'
+                batch.cool = True
 
         # Healing logic
-        if get_variable('approach_mashingstep_direction') == 'heat':
-            # Check if temperature is reached
-            if temp >= temp_to_reach:
-                # Mashing step temperature reached
-                switch_to_stay = True
-            else:
-                state = MASHSTEP_STATE_APPROACH
-                actions['heat'] = True
+        if batch.active_mashingstep_approach_direction == 'heat' and temp >= target_temperature:
+            # Mashing step temperature reached
+            switch_to_stay = True
 
         # Cooling logic
-        if get_variable('approach_mashingstep_direction') == 'cool':
-            # Check if temperature is reached
-            if temp <= temp_to_reach:
-                # Mashing step temperature reached
-                switch_to_stay = True
-            else:
-                state = MASHSTEP_STATE_APPROACH
-                actions['cool'] = True
+        if batch.active_mashingstep_approach_direction == 'cool'and temp <= target_temperature:
+            # Mashing step temperature reached
+            switch_to_stay = True
 
         # Mashing step degrees reached logic
         if switch_to_stay:
             # Switch to stay at temperature
-            set_variable('current_mashing_action', 'stay_at_mashingstep')
+            batch.active_mashingstep_state = MASHSTEP_STATE_STAY
+            batch.heat = False
+            batch.cool = False
             # Reset direction
-            set_variable('approach_mashingstep_direction', 'tbd')
-            # Change status
-            state = MASHSTEP_STATE_STAY
-            # Set chart icon in log
-            active_mashing_step_index = batch.mashing_scheme.mashingstep_set.filter(id__lt=active_mashing_step.id).count()
-            chart_icon = 'start' + str((active_mashing_step_index + 1))
+            batch.active_mashingstep_approach_direction = 'tbd'
 
-    elif get_variable('current_mashing_action') == 'stay_at_mashingstep':
-        active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
+
+    elif batch.active_mashingstep_state == MASHSTEP_STATE_STAY:
 
         # Check if total time to spend in active mashing step is reached
-        seconds_to_stay = int(active_mashing_step.minutes) * 60
-        first_log_for_current_mashing_step = MashLog.objects.filter(batch=batch, active_mashing_step=active_mashing_step, active_mashing_step_state='S')[0]
+        seconds_to_stay = int(batch.active_mashingstep.minutes) * 60
         now = datetime.now(pytz.utc)
-        difference = now - first_log_for_current_mashing_step.created
+        difference = now - batch.active_mashingstep_state_start
         if difference.total_seconds() >= seconds_to_stay:
             # Total time to spend in active mashing step reached
             # If active mashing step is latest, set status to finished
-            active_mashing_step_index = batch.mashing_scheme.mashingstep_set.filter(id__lt=active_mashing_step.id).count()
+            active_mashing_step_index = batch.mashing_scheme.mashingstep_set.filter(id__lt=batch.active_mashingstep.id).count()
             try:
                 # Activate next mashing step if available
-                active_mashing_step = batch.mashing_scheme.mashingstep_set.all()[active_mashing_step_index + 1]
-                state = MASHSTEP_STATE_APPROACH
-                set_variable('current_mashing_action', 'approach_mashingstep')
-                chart_icon = 'stop' + str((active_mashing_step_index + 1))
+                batch.active_mashingstep = batch.mashing_scheme.mashingstep_set.all()[active_mashing_step_index + 1]
+                batch.active_mashingstep_state = MASHSTEP_STATE_APPROACH
             except:
                 # Set state to finished
-                state = MASHSTEP_STATE_FINISHED
-                chart_icon = 'finished'
-                set_variable('current_mashing_action', 'finished')
+                batch.active_mashingstep_state = MASHSTEP_STATE_FINISHED
 
         else:
             # Total time spend not reached, check if actions are required to ensure current temperature
-            temp_to_stay = float(active_mashing_step.degrees)
-            state = MASHSTEP_STATE_STAY
+            target_temperature = float(batch.active_mashingstep.degrees)
 
             # TODO: Set actions if temperature goes out of bounds
             # if temp < (temp_to_stay - MAXIMUM_DEVIATION) and
-    elif get_variable('current_mashing_action') == 'finished':
-        state = MASHSTEP_STATE_FINISHED
-        active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
-
-    return {'state': state, 'active_mashing_step': active_mashing_step, 'actions': actions, 'chart_icon': chart_icon}
+    batch.save()
+    return batch
 
 
 # Return dummy temp for testing based on heat/cool actions triggered
