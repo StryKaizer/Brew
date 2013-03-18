@@ -27,7 +27,7 @@ def init_mashing(batch):
 
     # Initialize Arduino with Nanpy
     if not settings.ARDUINO_SIMULATION:
-        from nanpy import DallasTemperature # Nanpy Initializes Arduino connection, thus using conditional import
+        from nanpy import DallasTemperature, Arduino # Nanpy Initializes Arduino connection, thus using conditional import
         sensor = DallasTemperature(ARDUINO_TEMPERATURE_PIN)
         addr = sensor.getAddress(ARDUINO_TEMPERATURE_PIN)
         Arduino.pinMode(ARDUINO_HEAT_PIN, Arduino.OUTPUT)
