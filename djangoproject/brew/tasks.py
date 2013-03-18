@@ -32,8 +32,10 @@ def init_mashing(batch):
         sensor = DallasTemperature(ARDUINO_TEMPERATURE_PIN)
         addr = sensor.getAddress(ARDUINO_TEMPERATURE_PIN)
         Arduino.pinMode(ARDUINO_HEAT_PIN, Arduino.OUTPUT)
-        Arduino.pinMode(ARDUINO_STATUS_PIN, Arduino.OUTPUT)
         Arduino.pinMode(ARDUINO_COOL_PIN, Arduino.OUTPUT)
+        Arduino.pinMode(ARDUINO_STATUS_PIN, Arduino.OUTPUT)
+        Arduino.digitalWrite(ARDUINO_HEAT_PIN, Arduino.LOW)
+        Arduino.digitalWrite(ARDUINO_COOL_PIN, Arduino.LOW)
         Arduino.digitalWrite(ARDUINO_STATUS_PIN, Arduino.HIGH)
     else:
         # Set initial dummy temperature
@@ -202,7 +204,7 @@ def send_updates_to_arduino(batch):
     if batch.cool:
         Arduino.digitalWrite(ARDUINO_COOL_PIN, Arduino.HIGH)
     else:
-        Arduino.digitalWrite(ARDUINO_COOL_PIN, Arduino.LOW)        
+        Arduino.digitalWrite(ARDUINO_COOL_PIN, Arduino.LOW)
 
 
 # Return dummy temp for testing based on heat/cool actions triggered
