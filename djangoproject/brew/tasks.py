@@ -11,6 +11,8 @@ MASHSTEP_STATE_APPROACH = 'approach'
 MASHSTEP_STATE_STAY = 'stay'
 MASHSTEP_STATE_FINISHED = 'finished'
 ARDUINO_TEMPERATURE_PIN = 2
+ARDUINO_HEAT_PIN = 13
+ARDUINO_COOL_PIN = 11
 MAXIMUM_DEVIATION = 0.3  # Maximum allowed deviation in temperature before heat/cooling is triggered
 DELAY_BETWEEN_MEASUREMENTS = 2  # Seconds between each measurement
 DELAY_BETWEEN_LOGS = 15  # Seconds between each measurement
@@ -28,6 +30,8 @@ def init_mashing(batch):
         from nanpy import DallasTemperature # Nanpy Initializes Arduino connection, thus using conditional import
         sensor = DallasTemperature(ARDUINO_TEMPERATURE_PIN)
         addr = sensor.getAddress(ARDUINO_TEMPERATURE_PIN)
+        Arduino.pinMode(ARDUINO_HEAT_PIN, Arduino.OUTPUT)
+        Arduino.pinMode(ARDUINO_COOL_PIN, Arduino.OUTPUT)
     else:
         # Set initial dummy temperature
         batch.temperature = 20  # Testing purpose only
@@ -46,6 +50,10 @@ def init_mashing(batch):
 
         # Define actions depending on measured data
         batch = process_measured_data(batch.id, measured_data)
+
+        # Send updates to arduino
+        if not settings.ARDUINO_SIMULATION:
+            send_updates_to_arduino(batch)
 
         # Send to logging department
         handle_logging(batch)
@@ -178,6 +186,18 @@ def set_batch_defaults(batch):
     batch.heat = False
     batch.cool = False
     batch.save()
+
+
+def send_updates_to_arduino(batch):
+    if batch.heat:
+        Arduino.digitalWrite(ARDUINO_HEAT_PIN, Arduino.HIGH)
+    else:
+        Arduino.digitalWrite(ARDUINO_HEAT_PIN, Arduino.LOW)
+
+    if batch.cool:
+        Arduino.digitalWrite(ARDUINO_COOL_PIN, Arduino.HIGH)
+    else:
+        Arduino.digitalWrite(ARDUINO_COOL_PIN, Arduino.LOW)        
 
 
 # Return dummy temp for testing based on heat/cool actions triggered
