@@ -5,14 +5,16 @@ from time import sleep
 from random import random
 from datetime import datetime
 from django.conf import settings
+from nanpy import DallasTemperature, Arduino
 import pytz
 
 MASHSTEP_STATE_APPROACH = 'approach'
 MASHSTEP_STATE_STAY = 'stay'
 MASHSTEP_STATE_FINISHED = 'finished'
 ARDUINO_TEMPERATURE_PIN = 2
-ARDUINO_HEAT_PIN = 13
-ARDUINO_COOL_PIN = 11
+ARDUINO_HEAT_PIN = 11
+ARDUINO_COOL_PIN = 12
+ARDUINO_STATUS_PIN = 13
 MAXIMUM_DEVIATION = 0.3  # Maximum allowed deviation in temperature before heat/cooling is triggered
 DELAY_BETWEEN_MEASUREMENTS = 2  # Seconds between each measurement
 DELAY_BETWEEN_LOGS = 15  # Seconds between each measurement
@@ -27,11 +29,12 @@ def init_mashing(batch):
 
     # Initialize Arduino with Nanpy
     if not settings.ARDUINO_SIMULATION:
-        from nanpy import DallasTemperature, Arduino # Nanpy Initializes Arduino connection, thus using conditional import
         sensor = DallasTemperature(ARDUINO_TEMPERATURE_PIN)
         addr = sensor.getAddress(ARDUINO_TEMPERATURE_PIN)
         Arduino.pinMode(ARDUINO_HEAT_PIN, Arduino.OUTPUT)
+        Arduino.pinMode(ARDUINO_STATUS_PIN, Arduino.OUTPUT)
         Arduino.pinMode(ARDUINO_COOL_PIN, Arduino.OUTPUT)
+        Arduino.digitalWrite(ARDUINO_STATUS_PIN, Arduino.HIGH)
     else:
         # Set initial dummy temperature
         batch.temperature = 20  # Testing purpose only
@@ -60,6 +63,8 @@ def init_mashing(batch):
 
         # Delay
         sleep(DELAY_BETWEEN_MEASUREMENTS)
+
+    Arduino.digitalWrite(ARDUINO_STATUS_PIN, Arduino.LOW)
 
     return 'Mashing proces ended'
 
