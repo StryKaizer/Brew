@@ -9,7 +9,7 @@ class MashLogAdmin(admin.ModelAdmin):
     list_display  = (
         'created',
         'batch',
-        'degrees',
+        'temperature',
         'active_mashing_step',
         'active_mashing_step_state',
         'heat'

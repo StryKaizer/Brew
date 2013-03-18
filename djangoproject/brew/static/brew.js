@@ -66,6 +66,45 @@ var options = {
 }
 
 
+function render_realtime_data(data){
+        // Update current live data
+            // Update temperature label
+        $('#temperature').text(data.temperature + '°');
+
+        // Update heating label
+        if(data.heat){
+            $('.heating').fadeIn();
+        }else{
+            $('.heating').fadeOut();
+        }
+
+
+        // Update Mash Table
+        index = data.active_mashingstep_index;
+        state = data.active_mashingstep_state;
+        
+        switch (state){
+        
+            case 'finished':
+                // Flag previous states and current as finished
+                $('#mashingoverview tr:lt(' + (index + 1) + ')').removeClass('info').addClass('success').find('.status').text('Finished');
+                break;
+            case 'approach':
+                // Flag previous states as finished
+                $('#mashingoverview tr:lt(' + (index) + ')').removeClass('info').addClass('success').find('.status').text('Finished');
+                // Flag current as approaching
+                $('#mashingoverview tr:eq(' + index + ')').addClass('info').find('.status').text('Approaching...');
+                break;
+            case 'stay':
+                // Flag previous states as finished
+                $('#mashingoverview tr:lt(' + (index) + ')').removeClass('info').addClass('success').find('.status').text('Finished');
+                // Flag current as stay
+                $('#mashingoverview tr:eq(' + index + ')').addClass('info').find('.status').text('Running');
+                break;
+        }
+
+
+}
 
 
 /** ajax callback after start mashing executed **/
@@ -119,7 +158,7 @@ function chart_update_all(){
 function callback_chart_update_all(response){
     check_response(response);
 
-    Brew.latest_templog_id = response.data.latest_templog_id;
+    Brew.latest_mashlog_id = response.data.latest_mashlog_id;
 
     options.series[0].data = []
     for(item in response.data.chart){
@@ -130,24 +169,35 @@ function callback_chart_update_all(response){
         }else{
             marker_settings = {enabled: false}
         }
+
+        // Handle temperature/time
         options.series[0].data.push({
-            y: parseFloat(response.data.chart[item].degrees),
+            y: parseFloat(response.data.chart[item].temperature),
             x: response.data.chart[item].seconds * 1000,
             marker: marker_settings
         });
     }
+
+    render_realtime_data(response.data);
+
+    // Show total runtime, will be overwritten when running, this is only to show total runtime after mashing
+    
+    time_string = (new Date).clearTime()
+        .addSeconds(Brew.seconds_running)
+        .toString('hh:mm:ss');
+    $('#timer').text(time_string);
 
     chart = new Highcharts.Chart(options);
 }
 
 // Load latest data in graph
 function chart_update_latest(){
-    Dajaxice.brew.chart_update(callback_chart_update_latest, {'batch_id' : Brew.batch_id, 'greaterthan_mashlog_id' : Brew.latest_templog_id});
+    Dajaxice.brew.chart_update(callback_chart_update_latest, {'batch_id' : Brew.batch_id, 'greaterthan_mashlog_id' : Brew.latest_mashlog_id});
 }
 function callback_chart_update_latest(response){
     check_response(response);
-    if (response.data.latest_templog_id != null){
-        Brew.latest_templog_id = response.data.latest_templog_id;
+    if (response.data.latest_mashlog_id != null){
+        Brew.latest_mashlog_id = response.data.latest_mashlog_id;
     }
 
     options.series[0].data = []
@@ -162,42 +212,18 @@ function callback_chart_update_latest(response){
             marker_settings = {enabled: false}
         }
         point = {
-            y: parseFloat(response.data.chart[item].degrees),
+            y: parseFloat(response.data.chart[item].temperature),
             x: response.data.chart[item].seconds * 1000,
             marker: marker_settings
         };
 
-
-
         chart.series[0].addPoint(point);
-
-        // Update temperature label
-        $('#temperature').text(response.data.chart[item].degrees + '°');
-
-        // Update heating label
-        if(response.data.chart[item].heat){
-            $('.heating').fadeIn();
-        }else{
-            $('.heating').fadeOut();
-        }
-
-
-        // Update Mash Table
-        index = response.data.active_mashing_step_index;
-        state = response.data.active_mashing_step_state;
-        $('#mashingoverview tr:lt(' + index + ')').removeClass('info').addClass('success').find('.status').text('Finished');
-        switch (state){
-            case 'F':
-                $('#mashingoverview tr:eq(' + index + ')').addClass('success').find('.status').text('Finished');
-                break;
-            case 'A':
-                $('#mashingoverview tr:eq(' + index + ')').addClass('info').find('.status').text('Approaching...');
-                break;
-            case 'S':
-                $('#mashingoverview tr:eq(' + index + ')').addClass('info').find('.status').text('Running');
-                break;
-        }
     }
+
+render_realtime_data(response.data);
+
+
+
 }
 
 
@@ -219,7 +245,7 @@ function run_mashing(){
 
     countdown_for_update = countdown_for_update - 1;
     if(countdown_for_update < 1){
-        countdown_for_update = 10;
+        countdown_for_update = 11;
         chart_update_latest();
     }
 

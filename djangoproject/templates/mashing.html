@@ -41,7 +41,7 @@
             <thead>
             <tr>
                 <th>#</th>
-                <th>Degrees</th>
+                <th>Temperature</th>
                 <th>Minutes</th>
                 <th>Status</th>
             </tr>
@@ -51,7 +51,7 @@
             {% for mashing_step in batch.mashing_scheme.mashingstep_set.all %}
             <tr class="">
                 <td>{{ forloop.counter }}</td>
-                <td>{{ mashing_step.degrees }}</td>
+                <td>{{ mashing_step.temperature }}</td>
                 <td>{{ mashing_step.minutes }}</td>
                 <td class="status">Inactive</td>
             </tr>

@@ -8,19 +8,17 @@ from django.utils.dateformat import format
 
 @dajaxice_register
 def start_mashing(request, batch_id):
+    set_variable('active_mashingprocess_batch_id', str(batch_id))
     batch = Batch.objects.get(id=batch_id)
-    batch.mashing_process_is_running = True
-    batch.save()
     init_mashing.delay(batch)
     return simplejson.dumps({'status': 200})
 
 
 @dajaxice_register
 def stop_mashing(request, batch_id):
-    batch = Batch.objects.get(id=batch_id)
-    batch.mashing_process_is_running = False
-    batch.save()
+    set_variable('active_mashingprocess_batch_id', 'None')
     return simplejson.dumps({'status': 200})
+
 
 @dajaxice_register
 def chart_update(request, batch_id, greaterthan_mashlog_id=None):
@@ -28,46 +26,39 @@ def chart_update(request, batch_id, greaterthan_mashlog_id=None):
     batch = Batch.objects.get(id=batch_id)
 
     if greaterthan_mashlog_id:
-        logs = MashLog.objects.filter(batch__id=batch_id, id__gt=greaterthan_mashlog_id)
+        mash_logs = MashLog.objects.filter(batch__id=batch_id, id__gt=greaterthan_mashlog_id)
     else:
-        logs = MashLog.objects.filter(batch__id=batch_id)
+        mash_logs = MashLog.objects.filter(batch__id=batch_id)
 
-    if len(logs) > 0:
-        last_mashlog = logs.latest('id')
-        last_mashlog_id = last_mashlog.id
-        # Load active mashing step
-        try:
-            active_mashing_step = MashLog.objects.filter(batch=batch).latest('id').active_mashing_step
-        except MashLog.DoesNotExist:
-            active_mashing_step = batch.mashing_scheme.mashingstep_set.all()[0]
-        active_mashing_step_index = last_mashlog.batch.mashing_scheme.mashingstep_set.filter(position__lt=active_mashing_step.position).count()
-        active_mashing_step_state = batch.active_mashingstep_state
+    if len(mash_logs) > 0:
+        latest_mashlog_id = mash_logs.latest('id').id
     else:
-        last_mashlog_id = None
-        active_mashing_step_index = 0
-        active_mashing_step_state = 'A'
+        latest_mashlog_id = None
 
+    active_mashingstep_index = batch.mashing_scheme.mashingstep_set.filter(id__lt=batch.active_mashingstep.id).count()
 
 
     data = {
-        'chart': style_chart_data(logs),
-        'latest_templog_id': last_mashlog_id,
-        'active_mashing_step_index': active_mashing_step_index,
-        'active_mashing_step_state': active_mashing_step_state
+        'chart': style_chart_data(mash_logs),
+        'latest_mashlog_id': latest_mashlog_id,
+        'active_mashingstep_index': active_mashingstep_index,
+        'active_mashingstep_state': batch.active_mashingstep_state,
+        # 'active_mashingstep_state_start': batch.active_mashingstep_state_start,
+        'temperature': batch.temperature,
+        'heat': batch.heat,
+        'cool': batch.cool,
+        
     }
     return simplejson.dumps({'status': 200, 'data': data})
 
 
-def style_chart_data(mashing_temp_logs):
+def style_chart_data(mash_logs):
     result = []
-    for mashing_temp_log in mashing_temp_logs:
+    for mash_log in mash_logs:
         log = {
-            'seconds': mashing_temp_log.get_seconds_offset(),
-            'degrees': mashing_temp_log.degrees,
-            'icon': mashing_temp_log.chart_icon,
-            # 'state': mashing_temp_log.active_mashing_step_state,
-            'heat': mashing_temp_log.heat,
-            # 'step': mashing_temp_log.active_mashing_step.id
+            'seconds': mash_log.get_seconds_offset(),
+            'temperature': mash_log.temperature,
+            'icon': mash_log.chart_icon,
         }
         result.append(log)
     return result
@@ -75,6 +66,5 @@ def style_chart_data(mashing_temp_logs):
 
 @dajaxice_register
 def delete_mashing_data(request, batch_id):
-
     MashLog.objects.filter(batch__id=batch_id).delete()
     return simplejson.dumps({'status': 200})

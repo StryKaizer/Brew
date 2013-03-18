@@ -42,13 +42,13 @@ class MashingStep(models.Model):
     position = models.PositiveSmallIntegerField("Position")
     mashing_scheme = models.ForeignKey(MashingScheme)
     minutes = models.CharField(max_length=3)
-    degrees = models.CharField(max_length=3)
+    temperature = models.CharField(max_length=3)
 
     class Meta:
         ordering = ['position']
 
     def __unicode__(self):
-        return str(self.minutes) + ' min -  ' + str(self.degrees) + ' degrees'
+        return str(self.minutes) + ' min -  ' + str(self.temperature) + ' degrees'
 
 
 # The model Batch is used to define a brewing day, which will hold logs etc.
@@ -58,11 +58,11 @@ class Batch(models.Model):
     brewing_date = models.DateTimeField('Brewing date')
 
     # Data storage for mashing proces
-    mashing_process_is_running = models.BooleanField()
     active_mashingstep = models.ForeignKey(MashingStep)
     active_mashingstep_state = models.CharField(max_length=10, choices=MASHINGSTEP_STATES, default='approach')
     active_mashingstep_state_start = models.DateTimeField()
     active_mashingstep_approach_direction = models.CharField(max_length=10, choices=MASHINGSTEP_APPROACH_DIRECTIONS, default='tbd')
+    temperature = models.FloatField()
     heat = models.BooleanField()
     cool = models.BooleanField()
 
@@ -82,7 +82,7 @@ class Batch(models.Model):
 # The model MashLog is used to hold data of 1 measure for a certain Batch.
 class MashLog(models.Model):
     batch = models.ForeignKey(Batch)
-    degrees = models.FloatField()
+    temperature = models.FloatField()
     created = models.DateTimeField(auto_now_add=True)
     active_mashing_step = models.ForeignKey(MashingStep)
     active_mashing_step_state = models.CharField(max_length=10, choices=MASHINGSTEP_STATES)
