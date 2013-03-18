@@ -67,6 +67,8 @@ def init_mashing(batch):
         sleep(DELAY_BETWEEN_MEASUREMENTS)
 
     Arduino.digitalWrite(ARDUINO_STATUS_PIN, Arduino.LOW)
+    Arduino.digitalWrite(ARDUINO_COOL_PIN, Arduino.LOW)
+    Arduino.digitalWrite(ARDUINO_HEAT_PIN, Arduino.LOW)
 
     return 'Mashing proces ended'
 
